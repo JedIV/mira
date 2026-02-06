@@ -1,0 +1,196 @@
+// Technical metrics per agent
+export const technicalMetrics = {
+  'cs-agent-001': {
+    uptime: 99.7,
+    avgResponseTime: 1.2,
+    errorRate: 0.3,
+    requestsPerMinute: 245,
+    p95Latency: 2.1,
+    p99Latency: 3.8,
+  },
+  'fraud-agent-002': {
+    uptime: 99.99,
+    avgResponseTime: 0.15,
+    errorRate: 0.01,
+    requestsPerMinute: 1250,
+    p95Latency: 0.25,
+    p99Latency: 0.4,
+  },
+  'loan-agent-003': {
+    uptime: 99.5,
+    avgResponseTime: 4.5,
+    errorRate: 0.8,
+    requestsPerMinute: 45,
+    p95Latency: 8.2,
+    p99Latency: 12.1,
+  },
+  'it-support-004': {
+    uptime: 99.8,
+    avgResponseTime: 1.8,
+    errorRate: 0.2,
+    requestsPerMinute: 85,
+    p95Latency: 3.2,
+    p99Latency: 5.5,
+  },
+  'onboarding-005': {
+    uptime: 99.6,
+    avgResponseTime: 2.1,
+    errorRate: 0.5,
+    requestsPerMinute: 120,
+    p95Latency: 3.8,
+    p99Latency: 6.2,
+  },
+  'investment-006': {
+    uptime: 99.4,
+    avgResponseTime: 3.2,
+    errorRate: 0.6,
+    requestsPerMinute: 35,
+    p95Latency: 5.5,
+    p99Latency: 8.8,
+  },
+  'compliance-007': {
+    uptime: 99.95,
+    avgResponseTime: 0.8,
+    errorRate: 0.05,
+    requestsPerMinute: 890,
+    p95Latency: 1.2,
+    p99Latency: 2.0,
+  },
+  'marketing-008': {
+    uptime: 99.2,
+    avgResponseTime: 2.8,
+    errorRate: 1.2,
+    requestsPerMinute: 320,
+    p95Latency: 4.5,
+    p99Latency: 7.2,
+  },
+  'collections-009': {
+    uptime: 97.5,
+    avgResponseTime: 3.5,
+    errorRate: 2.8,
+    requestsPerMinute: 65,
+    p95Latency: 6.0,
+    p99Latency: 9.5,
+  },
+}
+
+// Business metrics per agent
+export const businessMetrics = {
+  'cs-agent-001': {
+    resolutionRate: 78.5,
+    throughput: 1250,
+    customerSatisfaction: 4.2,
+    avgHandleTime: 4.5,
+    escalationRate: 12.3,
+    firstContactResolution: 65.2,
+    // Q4 shows decline
+    previousResolutionRate: 85.2,
+    previousSatisfaction: 4.5,
+  },
+  'fraud-agent-002': {
+    detectionRate: 99.2,
+    falsePositiveRate: 2.1,
+    avgDetectionTime: 0.8,
+    blockedTransactions: 1247,
+    savedAmount: 2450000,
+  },
+  'loan-agent-003': {
+    approvalRate: 68.5,
+    avgProcessingTime: 24,
+    documentsProcessed: 3420,
+    accuracyRate: 97.8,
+    throughput: 142,
+  },
+  'it-support-004': {
+    resolutionRate: 82.3,
+    avgTicketTime: 12.5,
+    ticketsHandled: 856,
+    employeeSatisfaction: 4.4,
+  },
+  'onboarding-005': {
+    completionRate: 89.2,
+    avgOnboardingTime: 8.5,
+    customersOnboarded: 2340,
+    dropoffRate: 10.8,
+  },
+}
+
+// Enterprise-wide metrics
+export const enterpriseMetrics = {
+  totalAgents: 50,
+  activeAgents: 47,
+  degradedAgents: 2,
+  maintenanceAgents: 1,
+  totalInteractions: 125000,
+  avgSatisfaction: 4.1,
+  costSavings: 2400000,
+  incidentRate: 0.8,
+  platforms: 6,
+  teams: 12,
+}
+
+// Time series data generator
+export function generateTimeSeriesData(months = 12, baseValue = 100, variance = 0.1, q4Drop = false) {
+  const data = []
+  const now = new Date()
+
+  for (let i = months - 1; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    let value = baseValue
+
+    // Add variance
+    value += (Math.random() - 0.5) * baseValue * variance
+
+    // Q4 drop simulation (Oct, Nov, Dec)
+    if (q4Drop && date.getMonth() >= 9) {
+      value = value * 0.85
+    }
+
+    data.push({
+      date: date.toISOString().slice(0, 7),
+      month: date.toLocaleDateString('en-US', { month: 'short' }),
+      value: Math.round(value * 10) / 10,
+    })
+  }
+
+  return data
+}
+
+// Live activity data (hourly for last 24 hours)
+export function generateLiveActivityData() {
+  const data = []
+  const now = new Date()
+
+  for (let i = 23; i >= 0; i--) {
+    const hour = new Date(now.getTime() - i * 60 * 60 * 1000)
+    const hourNum = hour.getHours()
+
+    // Simulate business hours pattern
+    let baseActivity = 500
+    if (hourNum >= 9 && hourNum <= 17) {
+      baseActivity = 2000 + Math.random() * 500
+    } else if (hourNum >= 6 && hourNum <= 21) {
+      baseActivity = 800 + Math.random() * 300
+    } else {
+      baseActivity = 200 + Math.random() * 100
+    }
+
+    data.push({
+      time: hour.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      hour: hourNum,
+      interactions: Math.round(baseActivity),
+      errors: Math.round(baseActivity * 0.003),
+    })
+  }
+
+  return data
+}
+
+// Critical agents with their status
+export const criticalAgents = [
+  { id: 'fraud-agent-002', name: 'Fraud Detection', uptime: 99.99, responseTime: 0.15, errorRate: 0.01, status: 'healthy' },
+  { id: 'cs-agent-001', name: 'Customer Service', uptime: 99.7, responseTime: 1.2, errorRate: 0.3, status: 'healthy' },
+  { id: 'compliance-007', name: 'Compliance Monitor', uptime: 99.95, responseTime: 0.8, errorRate: 0.05, status: 'healthy' },
+  { id: 'loan-agent-003', name: 'Loan Processing', uptime: 99.5, responseTime: 4.5, errorRate: 0.8, status: 'warning' },
+  { id: 'escalation-015', name: 'Escalation Handler', uptime: 99.8, responseTime: 0.5, errorRate: 0.1, status: 'healthy' },
+]
