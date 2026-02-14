@@ -3,12 +3,12 @@ const variants = {
   warning: 'badge-warning',
   danger: 'badge-danger',
   neutral: 'badge-neutral',
-  primary: 'bg-primary-100 text-primary-700',
-  secondary: 'bg-violet-100 text-violet-700',
+  primary: 'bg-primary-50 text-primary-700 ring-1 ring-inset ring-primary-600/10',
+  secondary: 'bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-600/10',
 }
 
 const sizes = {
-  sm: 'text-xs px-2 py-0.5',
+  sm: 'text-[11px] px-2 py-0.5',
   md: 'text-xs px-2.5 py-1',
   lg: 'text-sm px-3 py-1.5',
 }
@@ -21,12 +21,12 @@ export function Badge({
   className = ''
 }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full font-medium ${variants[variant]} ${sizes[size]} ${className}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full font-semibold ${variants[variant]} ${sizes[size]} ${className}`}>
       {dot && (
         <span className={`w-1.5 h-1.5 rounded-full ${
-          variant === 'success' ? 'bg-success' :
-          variant === 'warning' ? 'bg-warning' :
-          variant === 'danger' ? 'bg-danger' :
+          variant === 'success' ? 'bg-emerald-500' :
+          variant === 'warning' ? 'bg-amber-500' :
+          variant === 'danger' ? 'bg-red-500' :
           variant === 'primary' ? 'bg-primary-500' :
           'bg-slate-400'
         }`} />

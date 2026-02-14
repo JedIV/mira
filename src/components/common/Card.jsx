@@ -8,7 +8,7 @@ export function Card({ children, className = '', hover = false, padding = true }
 
 export function CardHeader({ title, subtitle, action, icon: Icon }) {
   return (
-    <div className="flex items-start justify-between mb-4">
+    <div className="flex items-start justify-between mb-5">
       <div className="flex items-start gap-3">
         {Icon && (
           <div className="p-2 bg-primary-50 rounded-lg">
@@ -16,7 +16,7 @@ export function CardHeader({ title, subtitle, action, icon: Icon }) {
           </div>
         )}
         <div>
-          <h3 className="font-semibold text-slate-900">{title}</h3>
+          <h3 className="font-bold text-slate-900">{title}</h3>
           {subtitle && <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>}
         </div>
       </div>

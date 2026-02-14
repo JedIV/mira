@@ -1,30 +1,83 @@
 import { useParams, Link } from 'react-router-dom'
-import { Card, CardHeader, StatusBadge, Badge, MetricCard, MiniMetric } from '../components/common'
-import { LineChart } from '../components/charts'
+import { Card, CardHeader, StatusBadge, Badge } from '../components/common'
+import { MultiLineChart } from '../components/charts'
 import { getAgentById, platformSources } from '../data/agents'
-import { technicalMetrics, businessMetrics, generateTimeSeriesData } from '../data/metrics'
-import { formatPercent, formatNumber, formatDate, formatRelativeTime } from '../utils/formatters'
+import { generateAgentTimelineData, businessMetrics } from '../data/metrics'
+import { formatPercent } from '../utils/formatters'
+import PlatformLogo from '../components/PlatformLogo'
 import {
   ChevronRightIcon,
-  ClockIcon,
-  UserGroupIcon,
-  CheckCircleIcon,
+  SparklesIcon,
+  DocumentTextIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
 } from '../components/navigation/Icons'
 
-// Performance data with Q4 drop
-const performanceData = generateTimeSeriesData(12, 85, 0.08, true)
+const timelineLines = [
+  { dataKey: 'Business Impact', name: 'Business Impact', color: '#2AB1AC' },
+  { dataKey: 'Operational Health', name: 'Operational Health', color: '#10B981' },
+  { dataKey: 'Operational Risk', name: 'Operational Risk', color: '#EF4444' },
+]
+
+const primaryMetricLabels = {
+  resolutionRate: 'Resolution Rate',
+  customerSatisfaction: 'Customer Satisfaction',
+  throughput: 'Throughput',
+  detectionRate: 'Detection Rate',
+  blockedTransactions: 'Blocked Transactions',
+  approvalRate: 'Approval Rate',
+  accuracyRate: 'Accuracy Rate',
+  completionRate: 'Completion Rate',
+  employeeSatisfaction: 'Employee Satisfaction',
+}
+
+function formatBusinessMetric(key, value) {
+  if (key === 'customerSatisfaction' || key === 'employeeSatisfaction') return `${value}/5`
+  if (key === 'blockedTransactions' || key === 'throughput') return value.toLocaleString('en-US')
+  return `${value}%`
+}
 
 export default function AgentDetail() {
   const { agentId } = useParams()
   const agent = getAgentById(agentId || 'cs-agent-001')
-  const techMetrics = technicalMetrics[agentId] || technicalMetrics['cs-agent-001']
-  const bizMetrics = businessMetrics[agentId] || businessMetrics['cs-agent-001']
 
   if (!agent) {
     return <div className="text-center py-12 text-slate-500">Agent not found</div>
   }
 
   const source = platformSources.find(s => s.id === agent.source)
+  const isQ4Drop = agent.id === 'cs-agent-001'
+  const timelineData = generateAgentTimelineData(12, isQ4Drop)
+  const agentBusinessMetrics = businessMetrics[agent.id] || {}
+  const primaryMetricKey = Object.keys(primaryMetricLabels).find((key) => key in agentBusinessMetrics)
+  const primaryMetric = primaryMetricKey
+    ? {
+        label: primaryMetricLabels[primaryMetricKey],
+        value: formatBusinessMetric(primaryMetricKey, agentBusinessMetrics[primaryMetricKey]),
+      }
+    : {
+        label: 'Business KPI',
+        value: agent.businessImpact === 'green' ? 'On target' : agent.businessImpact === 'yellow' ? 'Needs review' : 'At risk',
+      }
+
+  const impactColors = {
+    green: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
+    yellow: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' },
+    red: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500' },
+  }
+  const impact = impactColors[agent.businessImpact] || impactColors.green
+
+  const trendIcon = (trend) => {
+    if (trend === 'up') return <ArrowUpIcon className="w-3 h-3 text-danger" />
+    if (trend === 'down') return <ArrowDownIcon className="w-3 h-3 text-success" />
+    return <span className="text-xs text-slate-400">—</span>
+  }
+
+  const formatResponseTime = (ms) => {
+    if (ms === 0) return 'N/A'
+    if (ms < 1000) return `${ms}ms`
+    return `${(ms / 1000).toFixed(1)}s`
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -32,121 +85,157 @@ export default function AgentDetail() {
       <Card>
         <div className="flex items-start gap-6">
           {/* Source Badge */}
-          <div
-            className="w-16 h-16 rounded-xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0"
-            style={{ backgroundColor: source?.color || '#94A3B8' }}
-          >
-            {agent.source.slice(0, 2).toUpperCase()}
-          </div>
+          <PlatformLogo sourceId={agent.source} color={source?.color} size={56} className="rounded-xl flex-shrink-0" />
 
           {/* Agent Info */}
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl font-bold text-slate-900">{agent.name}</h1>
+              <span className="text-sm text-slate-400">v{agent.version}</span>
               <StatusBadge status={agent.status} />
               {agent.criticality === 'high' && (
                 <Badge variant="danger">Critical</Badge>
               )}
             </div>
-            <p className="text-slate-600 mb-4">{agent.description}</p>
-
+            <p className="text-slate-600 mb-3">{agent.description}</p>
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
                 <span className="text-slate-500">Owner:</span>
-                <span className="ml-2 font-medium text-slate-900">{agent.owner}</span>
+                <span className="ml-1 font-medium text-slate-900">{agent.owner}</span>
               </div>
               <div>
                 <span className="text-slate-500">Team:</span>
-                <span className="ml-2 font-medium text-slate-900">{agent.team}</span>
+                <span className="ml-1 font-medium text-slate-900">{agent.team}</span>
               </div>
               <div>
                 <span className="text-slate-500">Domain:</span>
-                <span className="ml-2 font-medium text-slate-900">{agent.domain}</span>
-              </div>
-              <div>
-                <span className="text-slate-500">Version:</span>
-                <span className="ml-2 font-medium text-slate-900">v{agent.version}</span>
+                <span className="ml-1 font-medium text-slate-900">{agent.domain}</span>
               </div>
               <div>
                 <span className="text-slate-500">Platform:</span>
-                <span className="ml-2 font-medium text-slate-900">{source?.name}</span>
+                <span className="ml-1 font-medium text-slate-900">{source?.name}</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {agent.channels.map((channel) => (
+                  <span key={channel} className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs">
+                    {channel}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="flex flex-col gap-2">
+          {/* Actions */}
+          <div className="flex flex-col gap-2 flex-shrink-0">
             <Link
               to={`/agents/${agent.id}/behavior`}
               className="btn-primary text-sm"
             >
               View Behavior
             </Link>
-            <button className="btn-secondary text-sm">
-              Configure
-            </button>
+            <Link
+              to={`/agents/${agent.id}/logs`}
+              className="btn-secondary text-sm flex items-center gap-1.5"
+            >
+              <DocumentTextIcon className="w-4 h-4" />
+              See Logs
+            </Link>
           </div>
         </div>
       </Card>
 
-      {/* Channels & Tags */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader title="Supported Channels" />
-          <div className="flex flex-wrap gap-2">
-            {agent.channels.map((channel) => (
-              <Badge key={channel} variant="primary" size="lg">
-                {channel.charAt(0).toUpperCase() + channel.slice(1)}
-              </Badge>
-            ))}
+      {/* AI Insights */}
+      {agent.aiInsight && (
+        <Card className="border-l-4 border-l-primary-400">
+          <div className="flex items-start gap-3">
+            <div className="p-1.5 bg-primary-50 rounded-lg flex-shrink-0">
+              <SparklesIcon className="w-4 h-4 text-primary-600" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-sm font-semibold text-slate-900">AI Insights</h3>
+                <span className="text-xs text-slate-400">Auto-generated</span>
+              </div>
+              <p className="text-sm text-slate-600 leading-relaxed">{agent.aiInsight}</p>
+            </div>
           </div>
         </Card>
+      )}
+
+      {/* Metric Cards: Business Impact, Operational Health, Operational Risks */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Business Impact */}
         <Card>
-          <CardHeader title="Tags" />
-          <div className="flex flex-wrap gap-2">
-            {agent.tags.map((tag) => (
-              <Badge key={tag} variant="neutral" size="lg">
-                {tag}
-              </Badge>
-            ))}
+          <CardHeader title="Business Impact" />
+          <div className={`flex items-center gap-3 p-3 rounded-lg border ${impact.bg} ${impact.border}`}>
+            <div className={`w-3 h-3 rounded-full ${impact.dot}`} />
+            <span className={`text-sm font-medium ${impact.text}`}>
+              {agent.businessImpact === 'green' ? 'On Track' :
+               agent.businessImpact === 'yellow' ? 'Needs Attention' :
+               'Critical'}
+            </span>
+          </div>
+          <div className="mt-3">
+            <p className="text-xs text-slate-500">{primaryMetric.label}</p>
+            <p className="text-lg font-semibold text-slate-900">{primaryMetric.value}</p>
+          </div>
+          <p className="text-xs text-slate-500 mt-2">{agent.businessImpactLabel}</p>
+        </Card>
+
+        {/* Operational Health */}
+        <Card>
+          <CardHeader title="Operational Health" />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-500">Agent Response</span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold text-slate-900">
+                  {formatResponseTime(agent.operationalHealth.responseTime)}
+                </span>
+                {trendIcon(agent.operationalHealth.responseTimeTrend)}
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-500">Error Rate</span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold text-slate-900">
+                  {formatPercent(agent.operationalHealth.errorRate)}
+                </span>
+                {trendIcon(agent.operationalHealth.errorRateTrend)}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Operational Risks */}
+        <Card>
+          <CardHeader title="Operational Risks" />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-500">Security Warnings</span>
+              <span className={`text-lg font-semibold ${
+                agent.operationalRisks.securityWarnings > 0 ? 'text-amber-600' : 'text-slate-900'
+              }`}>
+                {agent.operationalRisks.securityWarnings}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-500">Data Exposure</span>
+              <span className={`text-lg font-semibold ${
+                agent.operationalRisks.dataExposure > 0 ? 'text-red-600' : 'text-slate-900'
+              }`}>
+                {agent.operationalRisks.dataExposure > 0 ? `${agent.operationalRisks.dataExposure} event${agent.operationalRisks.dataExposure > 1 ? 's' : ''}` : '0'}
+              </span>
+            </div>
           </div>
         </Card>
       </div>
 
-      {/* Performance Overview */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          label="Uptime"
-          value={formatPercent(techMetrics.uptime)}
-          icon={CheckCircleIcon}
-        />
-        <MetricCard
-          label="Avg Response Time"
-          value={techMetrics.avgResponseTime}
-          suffix="s"
-          icon={ClockIcon}
-        />
-        <MetricCard
-          label="Resolution Rate"
-          value={formatPercent(bizMetrics.resolutionRate)}
-          trend="down"
-          trendValue={7.8}
-        />
-        <MetricCard
-          label="Satisfaction"
-          value={bizMetrics.customerSatisfaction}
-          suffix="/5"
-          icon={UserGroupIcon}
-          trend="down"
-          trendValue={6.7}
-        />
-      </div>
-
-      {/* Performance Timeline */}
+      {/* Timeline Chart — 3 lines */}
       <Card>
         <CardHeader
           title="Performance Timeline"
-          subtitle="Resolution rate over the past 12 months"
+          subtitle="12-month trend across business impact, health, and risk"
           action={
             <Link
               to={`/agents/${agent.id}/behavior`}
@@ -157,74 +246,40 @@ export default function AgentDetail() {
           }
         />
 
-        {/* Q4 Drop Highlight */}
-        <div className="mb-4 p-4 bg-warning-light border border-warning rounded-lg">
-          <p className="font-medium text-warning-dark">Performance Drop Detected</p>
-          <p className="text-sm text-warning-dark/80 mt-1">
-            Starting in October (Q4), resolution rate dropped significantly from 85% to 78%.
-            This coincides with new topic patterns detected in behavior analysis.
-          </p>
-        </div>
+        {/* Q4 Drop alert for CS agent */}
+        {isQ4Drop && (
+          <div className="mb-4 p-4 bg-warning-light border border-warning rounded-lg">
+            <p className="font-medium text-warning-dark">Performance Drop Detected</p>
+            <p className="text-sm text-warning-dark/80 mt-1">
+              Resolution rate dropped from 85% to 78% starting in October. This correlates with a new "no snow" topic pattern detected in behavior analysis.
+            </p>
+          </div>
+        )}
 
-        <LineChart
-          data={performanceData}
-          dataKey="value"
-          color="#06B6D4"
+        <MultiLineChart
+          data={timelineData}
+          lines={timelineLines}
           height={300}
-          referenceLine={{ value: 80, label: 'Target', color: '#EF4444' }}
         />
 
-        {/* Timeline Markers */}
-        <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between text-xs text-slate-500">
-          <span>Jan</span>
-          <span>Feb</span>
-          <span>Mar</span>
-          <span>Apr</span>
-          <span>May</span>
-          <span>Jun</span>
-          <span>Jul</span>
-          <span>Aug</span>
-          <span>Sep</span>
-          <span className="text-warning font-medium">Oct ▼</span>
-          <span className="text-warning font-medium">Nov</span>
-          <span className="text-warning font-medium">Dec</span>
+        {/* Legend */}
+        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-6 justify-center">
+          {timelineLines.map((line) => (
+            <div key={line.dataKey} className="flex items-center gap-2 text-xs text-slate-500">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: line.color }} />
+              {line.name}
+            </div>
+          ))}
         </div>
       </Card>
 
-      {/* Technical Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader title="Technical Metrics" />
-          <div className="grid grid-cols-2 gap-4">
-            <MiniMetric label="P95 Latency" value={techMetrics.p95Latency} suffix="s" />
-            <MiniMetric label="P99 Latency" value={techMetrics.p99Latency} suffix="s" />
-            <MiniMetric label="Error Rate" value={formatPercent(techMetrics.errorRate)} />
-            <MiniMetric label="Requests/min" value={formatNumber(techMetrics.requestsPerMinute)} />
-          </div>
-        </Card>
-
-        <Card>
-          <CardHeader title="Business Metrics" />
-          <div className="grid grid-cols-2 gap-4">
-            <MiniMetric label="Throughput" value={formatNumber(bizMetrics.throughput)} suffix="/day" />
-            <MiniMetric label="Avg Handle Time" value={bizMetrics.avgHandleTime} suffix=" min" />
-            <MiniMetric label="First Contact Resolution" value={formatPercent(bizMetrics.firstContactResolution)} />
-            <MiniMetric label="Escalation Rate" value={formatPercent(bizMetrics.escalationRate)} />
-          </div>
-        </Card>
-      </div>
-
-      {/* Metadata */}
+      {/* Agent Information */}
       <Card>
         <CardHeader title="Agent Information" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
           <div>
             <p className="text-slate-500">Created</p>
-            <p className="font-medium text-slate-900">{formatDate(agent.createdAt)}</p>
-          </div>
-          <div>
-            <p className="text-slate-500">Last Active</p>
-            <p className="font-medium text-slate-900">{formatRelativeTime(agent.lastActive)}</p>
+            <p className="font-medium text-slate-900">{agent.createdAt}</p>
           </div>
           <div>
             <p className="text-slate-500">Agent ID</p>
@@ -233,6 +288,16 @@ export default function AgentDetail() {
           <div>
             <p className="text-slate-500">Criticality</p>
             <p className="font-medium text-slate-900 capitalize">{agent.criticality}</p>
+          </div>
+          <div>
+            <p className="text-slate-500">Tags</p>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {agent.tags.map((tag) => (
+                <span key={tag} className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-xs">
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </Card>

@@ -28,14 +28,16 @@ export default function AgentBehavior() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{agent?.name} - Behavior Analysis</h1>
-          <p className="text-slate-500">Conversation patterns and topic drift detection</p>
+      <div className="page-header">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">{agent?.name}</h1>
+            <p className="text-sm text-slate-300">Conversation topics, drift detection, and reasoning traces</p>
+          </div>
+          <Link to="/behavior/trends" className="btn-secondary !bg-white/10 !text-white !border-white/20 hover:!bg-white/20">
+            View All Trends
+          </Link>
         </div>
-        <Link to="/behavior/trends" className="btn-secondary">
-          View Enterprise Trends
-        </Link>
       </div>
 
       {/* Drift Alert */}

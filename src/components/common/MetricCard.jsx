@@ -18,26 +18,26 @@ export function MetricCard({
       <div className="flex items-start justify-between">
         <div>
           <p className="metric-label">{label}</p>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className={size === 'large' ? 'text-4xl font-bold text-slate-900' : 'metric-value'}>
+          <div className="flex items-baseline gap-1.5 mt-1.5">
+            <span className={size === 'large' ? 'text-4xl font-extrabold text-slate-900' : 'metric-value'}>
               {value}
             </span>
-            {suffix && <span className="text-lg text-slate-500">{suffix}</span>}
+            {suffix && <span className="text-lg font-medium text-slate-400">{suffix}</span>}
           </div>
           {trendValue !== null && (
-            <div className={`flex items-center gap-1 mt-2 text-sm font-medium ${
-              isPositiveTrend ? 'text-success' : isNegativeTrend ? 'text-danger' : 'text-slate-500'
+            <div className={`flex items-center gap-1 mt-2.5 text-sm font-semibold ${
+              isPositiveTrend ? 'text-emerald-600' : isNegativeTrend ? 'text-red-600' : 'text-slate-500'
             }`}>
-              {isPositiveTrend && <ArrowUpIcon className="w-4 h-4" />}
-              {isNegativeTrend && <ArrowDownIcon className="w-4 h-4" />}
+              {isPositiveTrend && <ArrowUpIcon className="w-3.5 h-3.5" />}
+              {isNegativeTrend && <ArrowDownIcon className="w-3.5 h-3.5" />}
               <span>{Math.abs(trendValue)}%</span>
-              <span className="text-slate-400 font-normal">vs last period</span>
+              <span className="text-slate-400 font-normal text-xs ml-0.5">vs last period</span>
             </div>
           )}
         </div>
         {Icon && (
-          <div className="p-3 bg-slate-100 rounded-xl">
-            <Icon className="w-6 h-6 text-slate-600" />
+          <div className="p-2.5 bg-slate-50 rounded-xl">
+            <Icon className="w-5 h-5 text-slate-400" />
           </div>
         )}
       </div>
@@ -49,8 +49,8 @@ export function MiniMetric({ label, value, suffix = '' }) {
   return (
     <div>
       <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-lg font-semibold text-slate-900">
-        {value}{suffix && <span className="text-sm text-slate-500 ml-0.5">{suffix}</span>}
+      <p className="text-lg font-bold text-slate-900">
+        {value}{suffix && <span className="text-sm text-slate-400 ml-0.5">{suffix}</span>}
       </p>
     </div>
   )

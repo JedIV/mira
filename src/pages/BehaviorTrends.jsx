@@ -33,7 +33,7 @@ const affectedAgents = [
 const topicBarData = enterpriseTopicData.map(t => ({
   name: t.name,
   value: t.cs + t.fraud + t.loan + t.it + t.onboard,
-  color: t.name === 'No Snow' ? '#EF4444' : '#06B6D4',
+  color: t.name === 'No Snow' ? '#EF4444' : '#2AB1AC',
 }))
 
 export default function BehaviorTrends() {
@@ -42,9 +42,9 @@ export default function BehaviorTrends() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Enterprise Behavior Trends</h1>
-        <p className="text-slate-500">Monitor topic patterns and behavior drift across all agents</p>
+      <div className="page-header">
+        <h1 className="text-2xl font-bold mb-2">Behavior Trends</h1>
+        <p className="text-sm text-slate-300">Topic patterns and behavior drift detected across all agents</p>
       </div>
 
       {/* Alert Banner */}
@@ -92,8 +92,7 @@ export default function BehaviorTrends() {
             height={300}
           />
           <div className="mt-4 p-3 bg-slate-50 rounded-lg text-sm text-slate-600">
-            First detected in September, peaked in December. Correlates with unseasonably warm weather
-            in the region.
+            First detected in September with 2% of conversations. Growth accelerated through Q4, reaching 19% by December.
           </div>
         </Card>
       </div>

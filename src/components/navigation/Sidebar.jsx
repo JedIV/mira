@@ -1,90 +1,74 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 import {
-  HomeIcon,
-  CubeIcon,
-  ServerStackIcon,
-  ChartBarIcon,
+  ListBulletIcon,
   CurrencyDollarIcon,
-  ChatBubbleLeftRightIcon,
-  ArrowTrendingUpIcon,
-  BeakerIcon,
-  ShieldCheckIcon,
+  HeartPulseIcon,
+  AlertTriangleIcon,
+  Cog6ToothIcon,
+  HomeIcon,
 } from './Icons'
+import dataikuLogo from '../../assets/dataiku-bird-white.svg'
 
 const navigation = [
-  { name: 'Overview', items: [
-    { name: 'Dashboard', href: '/', icon: HomeIcon },
-  ]},
-  { name: 'Agents', items: [
-    { name: 'Inventory', href: '/inventory', icon: CubeIcon },
-  ]},
-  { name: 'Performance', items: [
-    { name: 'Technical', href: '/performance/technical', icon: ServerStackIcon },
-    { name: 'Business', href: '/performance/business', icon: CurrencyDollarIcon },
-  ]},
-  { name: 'Intelligence', items: [
-    { name: 'Behavior', href: '/agents/cs-agent-001/behavior', icon: ChatBubbleLeftRightIcon },
-    { name: 'Trends', href: '/behavior/trends', icon: ArrowTrendingUpIcon },
-  ]},
-  { name: 'Quality', items: [
-    { name: 'Testing', href: '/testing', icon: BeakerIcon },
-    { name: 'Governance', href: '/governance', icon: ShieldCheckIcon },
-  ]},
+  { name: 'Overview', href: '/', icon: HomeIcon, end: true },
+  { name: 'Inventory', href: '/inventory', icon: ListBulletIcon },
+  { name: 'Business Impact', href: '/performance/business', icon: CurrencyDollarIcon },
+  { name: 'Health', href: '/performance/technical', icon: HeartPulseIcon },
+  { name: 'Risk', href: '/governance', icon: AlertTriangleIcon },
 ]
 
 export default function Sidebar() {
-  const location = useLocation()
-
   return (
-    <aside className="w-64 bg-sidebar flex flex-col">
+    <aside className="w-16 bg-sidebar flex flex-col items-center py-4 flex-shrink-0 border-r border-white/[0.06]">
       {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">M</span>
-          </div>
-          <div>
-            <h1 className="text-white font-semibold text-lg leading-none">Mira</h1>
-            <p className="text-slate-400 text-xs">Agent Management</p>
-          </div>
-        </div>
-      </div>
+      <Link to="/" className="w-10 h-10 rounded-lg flex items-center justify-center mb-6" title="Mira">
+        <img src={dataikuLogo} alt="Dataiku" className="w-8 h-8" />
+      </Link>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
-        {navigation.map((section) => (
-          <div key={section.name}>
-            <h2 className="section-title text-slate-500">{section.name}</h2>
-            <ul className="space-y-1">
-              {section.items.map((item) => (
-                <li key={item.name}>
-                  <NavLink
-                    to={item.href}
-                    className={({ isActive }) =>
-                      `nav-item ${isActive ? 'active' : ''}`
-                    }
-                    end={item.href === '/'}
-                  >
-                    <item.icon className="w-5 h-5" />
-                    {item.name}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </div>
+      {/* Divider */}
+      <div className="w-8 h-px bg-white/10 mb-4" />
+
+      {/* Navigation Icons */}
+      <nav className="flex-1 flex flex-col items-center gap-1">
+        {navigation.map((item) => (
+          <NavLink
+            key={item.name}
+            to={item.href}
+            end={item.end}
+            title={item.name}
+            className={({ isActive }) =>
+              `w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-150 ${
+                isActive
+                  ? 'bg-primary-500/20 text-primary-300'
+                  : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.06]'
+              }`
+            }
+          >
+            <item.icon className="w-5 h-5" />
+          </NavLink>
         ))}
       </nav>
 
-      {/* User/Company */}
-      <div className="p-4 border-t border-white/10">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-            <span className="text-white font-semibold text-sm">AB</span>
-          </div>
-          <div>
-            <p className="text-white text-sm font-medium">ABC Bank</p>
-            <p className="text-slate-400 text-xs">Enterprise Plan</p>
-          </div>
+      {/* Bottom: Settings + User */}
+      <div className="flex flex-col items-center gap-2 mt-auto">
+        <NavLink
+          to="/platforms"
+          title="Settings"
+          className={({ isActive }) =>
+            `w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-150 ${
+              isActive
+                ? 'bg-primary-500/20 text-primary-300'
+                : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.06]'
+            }`
+          }
+        >
+          <Cog6ToothIcon className="w-5 h-5" />
+        </NavLink>
+        <div
+          title="ABC Bank"
+          className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center cursor-pointer ring-2 ring-primary-500/20"
+        >
+          <span className="text-white font-bold text-xs">AB</span>
         </div>
       </div>
     </aside>

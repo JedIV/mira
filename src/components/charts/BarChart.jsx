@@ -13,7 +13,7 @@ export function BarChart({
   data,
   dataKey,
   xAxisKey = 'name',
-  color = '#06B6D4',
+  color = '#2AB1AC',
   height = 300,
   showGrid = true,
   horizontal = false,

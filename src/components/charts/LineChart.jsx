@@ -13,7 +13,7 @@ export function LineChart({
   data,
   dataKey,
   xAxisKey = 'month',
-  color = '#06B6D4',
+  color = '#2AB1AC',
   height = 300,
   showGrid = true,
   referenceLine = null,

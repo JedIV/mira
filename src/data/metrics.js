@@ -186,6 +186,34 @@ export function generateLiveActivityData() {
   return data
 }
 
+// Agent 360 timeline data: 3 normalized series (Business Impact, Op Health, Op Risk)
+export function generateAgentTimelineData(months = 12, q4Drop = false) {
+  const data = []
+  const now = new Date()
+
+  for (let i = months - 1; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    let bizImpact = 82 + (Math.random() - 0.3) * 10
+    let opHealth = 90 + (Math.random() - 0.4) * 8
+    let opRisk = 15 + (Math.random() - 0.5) * 10
+
+    if (q4Drop && date.getMonth() >= 9) {
+      bizImpact = bizImpact * 0.85
+      opHealth = opHealth * 0.92
+      opRisk = opRisk * 1.6
+    }
+
+    data.push({
+      month: date.toLocaleDateString('en-US', { month: 'short' }),
+      'Business Impact': Math.round(Math.min(100, Math.max(0, bizImpact)) * 10) / 10,
+      'Operational Health': Math.round(Math.min(100, Math.max(0, opHealth)) * 10) / 10,
+      'Operational Risk': Math.round(Math.min(100, Math.max(0, opRisk)) * 10) / 10,
+    })
+  }
+
+  return data
+}
+
 // Critical agents with their status
 export const criticalAgents = [
   { id: 'fraud-agent-002', name: 'Fraud Detection', uptime: 99.99, responseTime: 0.15, errorRate: 0.01, status: 'healthy' },

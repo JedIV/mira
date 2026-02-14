@@ -1,188 +1,195 @@
-import { Card, CardHeader, MetricCard } from '../components/common'
-import { LineChart, BarChart, DonutChart } from '../components/charts'
-import { generateTimeSeriesData, businessMetrics } from '../data/metrics'
-import { formatCurrency, formatPercent, formatNumber } from '../utils/formatters'
-import {
-  CurrencyDollarIcon,
-  UserGroupIcon,
-  CheckCircleIcon,
-  ClockIcon,
-} from '../components/navigation/Icons'
+import { Link } from 'react-router-dom'
+import { Card, CardHeader, Badge, BusinessImpactBadge } from '../components/common'
+import { agents } from '../data/agents'
+import { businessMetrics } from '../data/metrics'
+import { ChevronRightIcon, ExclamationTriangleIcon } from '../components/navigation/Icons'
 
-// Generate data showing Q4 performance drop
-const resolutionData = generateTimeSeriesData(12, 85, 0.08, true)
-const satisfactionData = generateTimeSeriesData(12, 4.3, 0.05, true)
-const throughputData = generateTimeSeriesData(12, 1200, 0.1)
+const impactConfig = {
+  green: {
+    label: 'Green',
+    subtitle: 'On track',
+    variant: 'success',
+    cardClass: 'bg-emerald-50 border-emerald-200',
+    textClass: 'text-emerald-700',
+    dotClass: 'bg-emerald-500',
+  },
+  yellow: {
+    label: 'Yellow',
+    subtitle: 'Needs attention',
+    variant: 'warning',
+    cardClass: 'bg-amber-50 border-amber-200',
+    textClass: 'text-amber-700',
+    dotClass: 'bg-amber-500',
+  },
+  red: {
+    label: 'Red',
+    subtitle: 'At risk',
+    variant: 'danger',
+    cardClass: 'bg-red-50 border-red-200',
+    textClass: 'text-red-700',
+    dotClass: 'bg-red-500',
+  },
+}
 
-const teamPerformance = [
-  { name: 'Customer Experience', value: 82, color: '#06B6D4' },
-  { name: 'Risk Management', value: 95, color: '#10B981' },
-  { name: 'Lending Operations', value: 78, color: '#F59E0B' },
-  { name: 'IT Operations', value: 88, color: '#8B5CF6' },
-  { name: 'Compliance', value: 92, color: '#EC4899' },
+const primaryMetricConfig = [
+  { key: 'resolutionRate', label: 'Resolution Rate', format: (v) => `${v}%` },
+  { key: 'customerSatisfaction', label: 'Customer Satisfaction', format: (v) => `${v}/5` },
+  { key: 'detectionRate', label: 'Detection Rate', format: (v) => `${v}%` },
+  { key: 'blockedTransactions', label: 'Blocked Transactions', format: (v) => v.toLocaleString('en-US') },
+  { key: 'approvalRate', label: 'Approval Rate', format: (v) => `${v}%` },
+  { key: 'accuracyRate', label: 'Accuracy Rate', format: (v) => `${v}%` },
+  { key: 'completionRate', label: 'Completion Rate', format: (v) => `${v}%` },
 ]
 
-const kpiDistribution = [
-  { name: 'Automated', value: 68, color: '#06B6D4' },
-  { name: 'Assisted', value: 22, color: '#8B5CF6' },
-  { name: 'Escalated', value: 10, color: '#F59E0B' },
-]
+function getPrimaryMetric(agentId) {
+  const metrics = businessMetrics[agentId]
+  if (!metrics) {
+    return { label: 'Business KPI', value: 'Context-specific' }
+  }
+
+  const metricEntry = primaryMetricConfig.find(({ key }) => key in metrics)
+  if (!metricEntry) {
+    return { label: 'Business KPI', value: 'Context-specific' }
+  }
+
+  return {
+    label: metricEntry.label,
+    value: metricEntry.format(metrics[metricEntry.key]),
+  }
+}
 
 export default function BusinessPerformance() {
-  const csMetrics = businessMetrics['cs-agent-001']
-  const resolutionDrop = ((csMetrics.previousResolutionRate - csMetrics.resolutionRate) / csMetrics.previousResolutionRate * 100).toFixed(1)
+  const impactCounts = {
+    green: agents.filter((agent) => agent.businessImpact === 'green').length,
+    yellow: agents.filter((agent) => agent.businessImpact === 'yellow').length,
+    red: agents.filter((agent) => agent.businessImpact === 'red').length,
+  }
+
+  const highlightedAgents = [...agents]
+    .filter((agent) => agent.businessImpact !== 'green')
+    .sort((a, b) => {
+      const order = { red: 0, yellow: 1 }
+      return order[a.businessImpact] - order[b.businessImpact]
+    })
+    .slice(0, 20)
+
+  const teamImpact = Object.entries(
+    agents.reduce((acc, agent) => {
+      if (!acc[agent.team]) {
+        acc[agent.team] = { green: 0, yellow: 0, red: 0 }
+      }
+      acc[agent.team][agent.businessImpact] += 1
+      return acc
+    }, {})
+  )
+    .map(([team, counts]) => ({ team, ...counts }))
+    .sort((a, b) => b.red - a.red || b.yellow - a.yellow || a.team.localeCompare(b.team))
+    .slice(0, 10)
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header with context */}
-      <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl p-6 text-white">
-        <h2 className="text-xl font-semibold mb-2">Business Performance Overview</h2>
-        <p className="text-primary-100">
-          Business metrics derived from actual outcomes, not just system telemetry. These KPIs
-          reflect how agents are contributing to ABC Bank's business objectives.
+      <div className="page-header">
+        <h1 className="text-2xl font-bold mb-2">Business Impact</h1>
+        <p className="text-sm text-slate-300">
+          Each agent is measured against its own business KPIs. Impact status indicates whether an agent is meeting, approaching, or missing its targets.
         </p>
       </div>
 
-      {/* Top KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <MetricCard
-          label="Overall Resolution Rate"
-          value="78.5"
-          suffix="%"
-          icon={CheckCircleIcon}
-          trend="down"
-          trendValue={parseFloat(resolutionDrop)}
-        />
-        <MetricCard
-          label="Customer Satisfaction"
-          value="4.1"
-          suffix="/5"
-          icon={UserGroupIcon}
-          trend="down"
-          trendValue={8.9}
-        />
-        <MetricCard
-          label="Daily Throughput"
-          value={formatNumber(8450)}
-          suffix=" interactions"
-          icon={ClockIcon}
-          trend="up"
-          trendValue={12.3}
-        />
-        <MetricCard
-          label="Cost Savings"
-          value={formatCurrency(2400000)}
-          suffix="/year"
-          icon={CurrencyDollarIcon}
-          trend="up"
-          trendValue={18.5}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {(['green', 'yellow', 'red']).map((impact) => {
+          const config = impactConfig[impact]
+          return (
+            <Card key={impact} className={`border ${config.cardClass}`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2.5 h-2.5 rounded-full ${config.dotClass}`} />
+                  <p className={`font-semibold ${config.textClass}`}>{config.label}</p>
+                </div>
+                <p className={`text-2xl font-bold ${config.textClass}`}>{impactCounts[impact]}</p>
+              </div>
+              <p className="text-sm text-slate-600">{config.subtitle}</p>
+            </Card>
+          )
+        })}
       </div>
 
-      {/* Alert Banner */}
-      <div className="bg-warning-light border border-warning rounded-lg p-4 flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-warning flex items-center justify-center flex-shrink-0">
-          <span className="text-white text-sm font-bold">!</span>
-        </div>
-        <div>
-          <p className="font-medium text-warning-dark">Q4 Performance Drop Detected</p>
-          <p className="text-sm text-warning-dark/80 mt-1">
-            Resolution rate dropped from 85.2% to 78.5% (-{resolutionDrop}%) in Q4.
-            Customer satisfaction also declined. Investigation recommended via Behavior Analysis.
-          </p>
-        </div>
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader
-            title="Resolution Rate Trend"
-            subtitle="12-month trend showing Q4 decline"
-          />
-          <LineChart
-            data={resolutionData}
-            dataKey="value"
-            color="#06B6D4"
-            height={280}
-            referenceLine={{ value: 80, label: 'Target', color: '#EF4444' }}
-          />
-        </Card>
-
-        <Card>
-          <CardHeader
-            title="Customer Satisfaction"
-            subtitle="Average CSAT score trend"
-          />
-          <LineChart
-            data={satisfactionData}
-            dataKey="value"
-            color="#10B981"
-            height={280}
-            referenceLine={{ value: 4.0, label: 'Minimum', color: '#EF4444' }}
-          />
-        </Card>
-      </div>
-
-      {/* Team Performance + Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader
-              title="Performance by Team"
-              subtitle="Resolution rate by business team"
-            />
-            <BarChart
-              data={teamPerformance}
-              dataKey="value"
-              xAxisKey="name"
-              height={280}
-            />
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader
-            title="Interaction Distribution"
-            subtitle="How interactions are handled"
-          />
-          <DonutChart
-            data={kpiDistribution}
-            height={280}
-          />
-          <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-600">Automation Rate</span>
-              <span className="font-semibold text-slate-900">68%</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-600">Escalation Rate</span>
-              <span className="font-semibold text-warning">10%</span>
-            </div>
+      {impactCounts.red > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+            <ExclamationTriangleIcon className="w-4 h-4 text-red-600" />
           </div>
-        </Card>
-      </div>
+          <div>
+            <p className="font-medium text-red-700">Business Risk Alert</p>
+            <p className="text-sm text-red-700/85 mt-1">
+              {impactCounts.red} {impactCounts.red === 1 ? 'agent is' : 'agents are'} missing business targets. Review behavior analysis, run validation tests, and check governance status before the next release.
+            </p>
+          </div>
+        </div>
+      )}
 
-      {/* Business Impact */}
       <Card>
-        <CardHeader title="Business Impact Summary" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div>
-            <p className="text-sm text-slate-500">Hours Saved (Monthly)</p>
-            <p className="text-2xl font-bold text-slate-900">12,450</p>
-          </div>
-          <div>
-            <p className="text-sm text-slate-500">Tickets Automated</p>
-            <p className="text-2xl font-bold text-slate-900">87,320</p>
-          </div>
-          <div>
-            <p className="text-sm text-slate-500">Avg Handle Time Reduction</p>
-            <p className="text-2xl font-bold text-success">-42%</p>
-          </div>
-          <div>
-            <p className="text-sm text-slate-500">Customer Wait Time</p>
-            <p className="text-2xl font-bold text-success">-65%</p>
-          </div>
+        <CardHeader
+          title="Agents Requiring Attention"
+          subtitle="Sorted by impact severity — click through to investigate"
+        />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                <th className="py-3 pr-3">Agent</th>
+                <th className="py-3 pr-3">Team</th>
+                <th className="py-3 pr-3">Impact</th>
+                <th className="py-3 pr-3">Primary KPI</th>
+                <th className="py-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {highlightedAgents.map((agent) => {
+                const metric = getPrimaryMetric(agent.id)
+                const config = impactConfig[agent.businessImpact]
+                return (
+                  <tr key={agent.id} className="hover:bg-slate-50">
+                    <td className="py-3 pr-3">
+                      <p className="font-medium text-slate-900">{agent.name}</p>
+                      <p className="text-xs text-slate-500">{agent.domain}</p>
+                    </td>
+                    <td className="py-3 pr-3 text-slate-700">{agent.team}</td>
+                    <td className="py-3 pr-3">
+                      <BusinessImpactBadge impact={agent.businessImpact} />
+                    </td>
+                    <td className="py-3 pr-3">
+                      <p className="font-medium text-slate-900">{metric.value}</p>
+                      <p className="text-xs text-slate-500">{metric.label}</p>
+                    </td>
+                    <td className="py-3 text-right">
+                      <Link
+                        to={`/agents/${agent.id}`}
+                        className="text-primary-600 hover:text-primary-700 inline-flex items-center gap-1 font-medium"
+                      >
+                        Open Agent 360 <ChevronRightIcon className="w-4 h-4" />
+                      </Link>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader title="Impact by Team" subtitle="Teams with the most agents needing attention" />
+        <div className="space-y-3">
+          {teamImpact.map((row) => (
+            <div key={row.team} className="flex items-center justify-between border border-slate-200 rounded-lg px-4 py-3">
+              <p className="text-sm font-medium text-slate-900">{row.team}</p>
+              <div className="flex items-center gap-2 text-xs">
+                <Badge variant="danger" dot>Red {row.red}</Badge>
+                <Badge variant="warning" dot>Yellow {row.yellow}</Badge>
+                <Badge variant="success" dot>Green {row.green}</Badge>
+              </div>
+            </div>
+          ))}
         </div>
       </Card>
     </div>

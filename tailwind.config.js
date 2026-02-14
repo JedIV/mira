@@ -7,25 +7,25 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary - Teal/Cyan
+        // Primary - Dataiku Teal
         primary: {
-          50: '#ECFEFF',
-          100: '#CFFAFE',
-          200: '#A5F3FC',
-          300: '#67E8F9',
-          400: '#22D3EE',
-          500: '#06B6D4',
-          600: '#0891B2',
-          700: '#0E7490',
-          800: '#155E75',
-          900: '#164E63',
-          950: '#083344',
+          50: '#EFFEFB',
+          100: '#C7FFF8',
+          200: '#90FFF1',
+          300: '#51F7E8',
+          400: '#1DE4D6',
+          500: '#2AB1AC',
+          600: '#038E8A',
+          700: '#08716E',
+          800: '#0B5A58',
+          900: '#0E4A49',
+          950: '#002D2C',
         },
-        // Sidebar - Dark slate
+        // Sidebar - Deep slate
         sidebar: {
-          DEFAULT: '#0F172A',
-          hover: '#1E293B',
-          active: '#334155',
+          DEFAULT: '#0C1222',
+          hover: '#1A2235',
+          active: '#2A3349',
         },
         // Status colors
         success: {
@@ -45,17 +45,17 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'monospace'],
       },
       boxShadow: {
-        'card': '0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05)',
-        'card-hover': '0 4px 12px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.08)',
-        'elevated': '0 10px 40px rgba(0,0,0,0.12)',
+        'card': '0 1px 2px rgba(0,0,0,0.04), 0 1px 6px rgba(0,0,0,0.04)',
+        'card-hover': '0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)',
+        'elevated': '0 10px 40px rgba(0,0,0,0.1)',
       },
       animation: {
-        'fade-in': 'fadeIn 0.3s ease-out',
-        'slide-up': 'slideUp 0.3s ease-out',
+        'fade-in': 'fadeIn 0.35s ease-out',
+        'slide-up': 'slideUp 0.35s ease-out',
         'pulse-slow': 'pulse 3s ease-in-out infinite',
       },
       keyframes: {
@@ -64,7 +64,7 @@ export default {
           '100%': { opacity: '1' },
         },
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },

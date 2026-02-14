@@ -19,6 +19,14 @@ export default function Testing() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="page-header">
+        <h1 className="text-2xl font-bold mb-2">Testing & Validation</h1>
+        <p className="text-sm text-slate-300">
+          Validation results for agent prompts, data connections, guardrails, and expected behaviors
+        </p>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="text-center">

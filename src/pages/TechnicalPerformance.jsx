@@ -12,6 +12,14 @@ const errorRateData = generateTimeSeriesData(12, 0.5, 0.3)
 export default function TechnicalPerformance() {
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="page-header">
+        <h1 className="text-2xl font-bold mb-2">Operational Health</h1>
+        <p className="text-sm text-slate-300">
+          System uptime, response times, and error rates across all agents
+        </p>
+      </div>
+
       {/* Summary Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard

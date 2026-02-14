@@ -12,7 +12,7 @@ export function AreaChart({
   data,
   dataKey,
   xAxisKey = 'time',
-  color = '#06B6D4',
+  color = '#2AB1AC',
   height = 300,
   showGrid = true,
   gradient = true,

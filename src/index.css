@@ -10,29 +10,36 @@
 
   body {
     @apply bg-slate-50 text-slate-800 font-sans;
+    letter-spacing: -0.011em;
   }
 
   * {
     @apply border-slate-200;
+  }
+
+  h1, h2, h3 {
+    letter-spacing: -0.025em;
   }
 }
 
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2
-           text-sm font-medium rounded-lg transition-all duration-200
+           text-sm font-semibold rounded-lg transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
-    @apply btn bg-primary-500 text-white
-           hover:bg-primary-600 focus:ring-primary-500;
+    @apply btn bg-primary-600 text-white
+           hover:bg-primary-700 focus:ring-primary-500
+           shadow-sm hover:shadow;
   }
 
   .btn-secondary {
-    @apply btn bg-white text-slate-700 border border-slate-300
-           hover:bg-slate-50 focus:ring-slate-500;
+    @apply btn bg-white text-slate-700 border border-slate-200
+           hover:bg-slate-50 hover:border-slate-300 focus:ring-slate-500
+           shadow-sm;
   }
 
   .btn-ghost {
@@ -40,42 +47,42 @@
   }
 
   .card {
-    @apply bg-white rounded-xl border border-slate-200 shadow-card;
+    @apply bg-white rounded-xl border border-slate-200/80 shadow-card;
   }
 
   .card-hover {
-    @apply card transition-shadow duration-200 hover:shadow-card-hover;
+    @apply card transition-all duration-200 hover:shadow-card-hover hover:border-slate-300/80;
   }
 
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
   }
 
   .badge-success {
-    @apply badge bg-success-light text-success-dark;
+    @apply badge bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/10;
   }
 
   .badge-warning {
-    @apply badge bg-warning-light text-warning-dark;
+    @apply badge bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/10;
   }
 
   .badge-danger {
-    @apply badge bg-danger-light text-danger-dark;
+    @apply badge bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/10;
   }
 
   .badge-neutral {
-    @apply badge bg-slate-100 text-slate-700;
+    @apply badge bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-500/10;
   }
 
   .input {
-    @apply w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg
+    @apply w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg
            placeholder:text-slate-400
-           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
-           transition-colors duration-200;
+           focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
+           transition-all duration-200;
   }
 
   .metric-value {
-    @apply text-3xl font-semibold tracking-tight text-slate-900;
+    @apply text-3xl font-bold tracking-tight text-slate-900;
   }
 
   .metric-label {
@@ -97,11 +104,28 @@
   }
 
   .page-title {
-    @apply text-2xl font-semibold text-slate-900;
+    @apply text-2xl font-bold text-slate-900;
   }
 
   .page-subtitle {
     @apply text-sm text-slate-500;
+  }
+
+  /* Page header gradient banner */
+  .page-header {
+    @apply relative overflow-hidden rounded-xl p-6 text-white;
+    background: linear-gradient(135deg, #0C1222 0%, #0E4A49 100%);
+  }
+
+  .page-header::after {
+    content: '';
+    @apply absolute inset-0 opacity-[0.06];
+    background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0);
+    background-size: 24px 24px;
+  }
+
+  .page-header > * {
+    @apply relative z-10;
   }
 }
 
@@ -116,7 +140,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
+  @apply bg-slate-300/60 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -133,4 +157,14 @@
   background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* Table refinements */
+table thead th {
+  @apply text-slate-500;
+  letter-spacing: 0.05em;
+}
+
+table tbody tr {
+  @apply transition-colors;
 }
