@@ -9,8 +9,9 @@ export default function AgentBehavior() {
   const { agentId } = useParams()
   const agent = getAgentById(agentId || 'cs-agent-001')
   const conversations = sampleConversations[agentId] || sampleConversations['cs-agent-001']
-  const q3Topics = topicDistributions['cs-agent-001']['2024-Q3']
-  const q4Topics = topicDistributions['cs-agent-001']['2024-Q4']
+  const agentTopicDistributions = topicDistributions[agentId] || topicDistributions['cs-agent-001'] || {}
+  const q3Topics = agentTopicDistributions['2024-Q3'] || {}
+  const q4Topics = agentTopicDistributions['2024-Q4'] || {}
 
   // Format topics for chart
   const q3Data = Object.entries(q3Topics).map(([name, value]) => ({

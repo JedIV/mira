@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
 import { getAgentsByTeamGrouped } from '../../data/agents'
 import { ChevronRightIcon } from './Icons'
@@ -19,6 +19,10 @@ export default function AgentNavPane() {
 
   const [collapsed, setCollapsed] = useState(initialCollapsed)
   const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    setCollapsed(initialCollapsed)
+  }, [initialCollapsed])
 
   const toggleTeam = (team) => {
     setCollapsed(prev => ({ ...prev, [team]: !prev[team] }))

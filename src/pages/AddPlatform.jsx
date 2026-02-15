@@ -312,12 +312,13 @@ function StepScanResults({ platformId }) {
               selected.has(idx) ? 'bg-primary-50/30' : 'hover:bg-slate-50'
             }`}
           >
-            <input
-              type="checkbox"
-              checked={selected.has(idx)}
-              onChange={() => toggleAgent(idx)}
-              className="w-4 h-4 rounded border-slate-300 text-primary-500 focus:ring-primary-500"
-            />
+          <input
+            type="checkbox"
+            checked={selected.has(idx)}
+            onClick={(e) => e.stopPropagation()}
+            onChange={() => toggleAgent(idx)}
+            className="w-4 h-4 rounded border-slate-300 text-primary-500 focus:ring-primary-500"
+          />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-900">{agent.name}</p>
               <p className="text-xs text-slate-500 truncate">{agent.description}</p>

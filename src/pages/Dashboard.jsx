@@ -367,7 +367,7 @@ export default function Dashboard() {
       <div className="page-header">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-1">Mira</p>
+            <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-1">ABC Bank &middot; Mira</p>
             <h1 className="text-2xl font-bold">Agent Overview</h1>
             <p className="text-sm text-slate-300 mt-2 max-w-2xl">
               Monitor business impact, operational health, and risk across {agents.length} agents deployed on {platformSources.length} platforms.
