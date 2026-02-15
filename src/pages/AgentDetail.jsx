@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Card, CardHeader, StatusBadge, Badge } from '../components/common'
 import { MultiLineChart } from '../components/charts'
 import { getAgentById, platformSources } from '../data/agents'
+import { getAgentPlatformUrl } from '../data/platforms'
 import { generateAgentTimelineData, businessMetrics } from '../data/metrics'
 import { formatPercent } from '../utils/formatters'
 import PlatformLogo from '../components/PlatformLogo'
@@ -111,9 +112,22 @@ export default function AgentDetail() {
                 <span className="text-slate-500">Domain:</span>
                 <span className="ml-1 font-medium text-slate-900">{agent.domain}</span>
               </div>
-              <div>
+              <div className="flex items-center gap-1">
                 <span className="text-slate-500">Platform:</span>
                 <span className="ml-1 font-medium text-slate-900">{source?.name}</span>
+                {getAgentPlatformUrl(agent) && (
+                  <a
+                    href={getAgentPlatformUrl(agent)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 ml-1 text-primary-600 hover:text-primary-700 transition-colors"
+                    title={`Open in ${source?.name}`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                    </svg>
+                  </a>
+                )}
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {agent.channels.map((channel) => (

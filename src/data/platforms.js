@@ -92,3 +92,20 @@ export const mockScanResults = {
     { name: 'Unity Catalog Scanner', description: 'Scans Unity Catalog for governance compliance', type: 'Governance' },
   ],
 }
+
+// Generate a plausible deep-link URL to the agent's location in its host platform
+const platformUrlTemplates = {
+  bedrock: (agent) => `https://us-east-1.console.aws.amazon.com/bedrock/home#/agents/${agent.id}`,
+  copilot: (agent) => `https://copilotstudio.microsoft.com/environments/default/bots/${agent.id}/overview`,
+  servicenow: (agent) => `https://abcbank.service-now.com/now/nav/ui/classic/params/target/sys_ai_agent.do%3Fsys_id%3D${agent.id}`,
+  langchain: (agent) => `https://smith.langchain.com/o/abc-bank/projects/${agent.id}`,
+  n8n: (agent) => `https://n8n.internal.abcbank.com/workflow/${agent.id}`,
+  dataiku: (agent) => `https://dss.abcbank.com/projects/MIRA/recipes/${agent.id}`,
+  snowflake: (agent) => `https://abcbank.snowflakecomputing.com/cortex/agents/${agent.id}`,
+  databricks: (agent) => `https://abcbank.cloud.databricks.com/#mlflow/agents/${agent.id}`,
+}
+
+export function getAgentPlatformUrl(agent) {
+  const template = platformUrlTemplates[agent.source]
+  return template ? template(agent) : null
+}
