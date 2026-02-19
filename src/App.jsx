@@ -10,6 +10,7 @@ import AgentLogs from './pages/AgentLogs'
 import BehaviorTrends from './pages/BehaviorTrends'
 import Testing from './pages/Testing'
 import Governance from './pages/Governance'
+import AgentAccess from './pages/AgentAccess'
 import Platforms from './pages/Platforms'
 import AddPlatform from './pages/AddPlatform'
 import Login from './pages/Login'
@@ -26,6 +27,7 @@ function App() {
         <Route path="agents/:agentId" element={<AgentDetail />} />
         <Route path="agents/:agentId/behavior" element={<AgentBehavior />} />
         <Route path="agents/:agentId/logs" element={<AgentLogs />} />
+        <Route path="agents/:agentId/access" element={<AgentAccess />} />
         <Route path="behavior/trends" element={<BehaviorTrends />} />
         <Route path="testing" element={<Testing />} />
         <Route path="governance" element={<Governance />} />

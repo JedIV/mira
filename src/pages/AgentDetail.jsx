@@ -4,6 +4,7 @@ import { MultiLineChart } from '../components/charts'
 import { getAgentById, platformSources } from '../data/agents'
 import { getAgentPlatformUrl } from '../data/platforms'
 import { generateAgentTimelineData, businessMetrics } from '../data/metrics'
+import { getAccessByAgentId } from '../data/access'
 import { formatPercent } from '../utils/formatters'
 import PlatformLogo from '../components/PlatformLogo'
 import {
@@ -46,6 +47,7 @@ export default function AgentDetail() {
     return <div className="text-center py-12 text-slate-500">Agent not found</div>
   }
 
+  const accessInfo = getAccessByAgentId(agentId || 'cs-agent-001')
   const source = platformSources.find(s => s.id === agent.source)
   const isQ4Drop = agent.id === 'cs-agent-001'
   const timelineData = generateAgentTimelineData(12, isQ4Drop)
@@ -176,8 +178,8 @@ export default function AgentDetail() {
         </Card>
       )}
 
-      {/* Metric Cards: Business Impact, Operational Health, Operational Risks */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Metric Cards: Business Impact, Operational Health, Operational Risks, User Access */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* Business Impact */}
         <Card>
           <CardHeader title="Business Impact" />
@@ -242,6 +244,31 @@ export default function AgentDetail() {
               </span>
             </div>
           </div>
+        </Card>
+
+        {/* User Access */}
+        <Card>
+          <CardHeader title="User Access" />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-500">Groups</span>
+              <span className="text-lg font-semibold text-slate-900">{accessInfo.summary.totalGroups}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-500">Total Users</span>
+              <span className="text-lg font-semibold text-slate-900">{accessInfo.summary.totalUsers.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-500">Active (24h)</span>
+              <span className="text-lg font-semibold text-slate-900">{accessInfo.summary.activeUsers24h.toLocaleString()}</span>
+            </div>
+          </div>
+          <Link
+            to={`/agents/${agent.id}/access`}
+            className="mt-3 inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium"
+          >
+            Manage Access <ChevronRightIcon className="w-4 h-4" />
+          </Link>
         </Card>
       </div>
 
