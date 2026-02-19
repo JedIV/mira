@@ -12,10 +12,12 @@ import Testing from './pages/Testing'
 import Governance from './pages/Governance'
 import Platforms from './pages/Platforms'
 import AddPlatform from './pages/AddPlatform'
+import Login from './pages/Login'
 
 function App() {
   return (
     <Routes>
+      <Route path="/login" element={<Login />} />
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="inventory" element={<AgentInventory />} />
