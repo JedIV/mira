@@ -206,8 +206,29 @@ export function generateLiveActivityData() {
   return data
 }
 
+// KYC-specific timeline: fixed deterministic data showing the "healthy ops / failing business" story.
+// Business Impact falls from ~83 to ~42 over 6 months while Operational Health stays flat ~90.
+// This is the core demo moment: the agent is technically fine but missing business targets badly.
+export const kycTimelineData = [
+  { month: 'Mar', 'Business Impact': 84.2, 'Operational Health': 91.1, 'Operational Risk': 12.4 },
+  { month: 'Apr', 'Business Impact': 83.5, 'Operational Health': 90.8, 'Operational Risk': 13.1 },
+  { month: 'May', 'Business Impact': 82.8, 'Operational Health': 91.4, 'Operational Risk': 12.7 },
+  { month: 'Jun', 'Business Impact': 83.1, 'Operational Health': 90.6, 'Operational Risk': 13.5 },
+  { month: 'Jul', 'Business Impact': 82.4, 'Operational Health': 91.2, 'Operational Risk': 12.9 },
+  { month: 'Aug', 'Business Impact': 81.9, 'Operational Health': 90.9, 'Operational Risk': 13.8 },
+  // Q4 starts: escalation rate begins climbing, business impact diverges from op health
+  { month: 'Sep', 'Business Impact': 78.3, 'Operational Health': 91.5, 'Operational Risk': 13.2 },
+  { month: 'Oct', 'Business Impact': 70.1, 'Operational Health': 91.8, 'Operational Risk': 12.6 },
+  { month: 'Nov', 'Business Impact': 60.4, 'Operational Health': 90.7, 'Operational Risk': 13.9 },
+  { month: 'Dec', 'Business Impact': 51.2, 'Operational Health': 91.3, 'Operational Risk': 14.1 },
+  { month: 'Jan', 'Business Impact': 45.8, 'Operational Health': 90.5, 'Operational Risk': 13.7 },
+  { month: 'Feb', 'Business Impact': 41.6, 'Operational Health': 91.0, 'Operational Risk': 13.4 },
+]
+
 // Agent 360 timeline data: 3 normalized series (Business Impact, Op Health, Op Risk)
 export function generateAgentTimelineData(months = 12, q4Drop = false) {
+  if (q4Drop === 'biz-only') return kycTimelineData
+
   const data = []
   const now = new Date()
 

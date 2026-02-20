@@ -98,6 +98,19 @@ const accessData = {
     ],
   },
 
+  'kyc-agent-016': {
+    groups: [
+      { id: 'ldap-kyc-001', name: 'CN=KYC-Analysts', displayName: 'KYC Analysts', description: 'Primary KYC team with full verification workflow access', permissionLevel: 'execute', userCount: 31, activeUsers24h: 24, grantedAt: '2024-04-01', grantedBy: 'Priya Sharma', status: 'active', nextReviewDate: '2025-07-01' },
+      { id: 'ldap-kyc-002', name: 'CN=KYC-Supervisors', displayName: 'KYC Supervisors', description: 'Admin access for escalation rules and threshold configuration', permissionLevel: 'admin', userCount: 5, activeUsers24h: 4, grantedAt: '2024-04-01', grantedBy: 'Priya Sharma', status: 'active', nextReviewDate: '2025-07-01' },
+      { id: 'ldap-kyc-003', name: 'CN=Underwriting-Team', displayName: 'Underwriting Team', description: 'Execute access to review escalated credit applications', permissionLevel: 'execute', userCount: 28, activeUsers24h: 19, grantedAt: '2024-05-15', grantedBy: 'Priya Sharma', status: 'active', nextReviewDate: '2025-05-15' },
+      { id: 'ldap-kyc-004', name: 'CN=Compliance-Audit-RO', displayName: 'Compliance Audit', description: 'Read-only access for regulatory audit and reporting', permissionLevel: 'read', userCount: 12, activeUsers24h: 5, grantedAt: '2024-06-01', grantedBy: 'Jennifer Park', status: 'active', nextReviewDate: '2025-06-01' },
+      { id: 'ldap-kyc-005', name: 'CN=Risk-Analytics-RO', displayName: 'Risk Analytics', description: 'Read access for escalation rate monitoring and trend analysis', permissionLevel: 'read', userCount: 9, activeUsers24h: 6, grantedAt: '2024-08-10', grantedBy: 'Priya Sharma', status: 'pending-review', nextReviewDate: '2025-02-10' },
+    ],
+    pendingRequests: [
+      { id: 'req-kyc-001', groupName: 'CN=Credit-Operations', requester: 'Marcus Webb', justification: 'Credit ops team needs execute access to process escalated manual review queue — current queue depth 847 pending', requestedDate: '2025-02-12', status: 'pending' },
+    ],
+  },
+
   'hr-agent-010': {
     groups: [
       { id: 'ldap-hr-001', name: 'CN=HR-Generalists', displayName: 'HR Generalists', description: 'HR team with employee query resolution access', permissionLevel: 'execute', userCount: 22, activeUsers24h: 14, grantedAt: '2024-05-01', grantedBy: 'David Kim', status: 'active', nextReviewDate: '2025-05-01' },

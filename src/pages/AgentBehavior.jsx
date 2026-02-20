@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom'
 import { Card, CardHeader, Badge } from '../components/common'
 import { DonutChart } from '../components/charts'
 import { getAgentById } from '../data/agents'
-import { sampleConversations, topicDistributions, topicColors } from '../data/conversations'
+import { sampleConversations, topicDistributions, topicColors, driftAlerts } from '../data/conversations'
 import { formatDateTime } from '../utils/formatters'
 
 export default function AgentBehavior() {
@@ -10,8 +10,11 @@ export default function AgentBehavior() {
   const agent = getAgentById(agentId || 'cs-agent-001')
   const conversations = sampleConversations[agentId] || sampleConversations['cs-agent-001']
   const agentTopicDistributions = topicDistributions[agentId] || topicDistributions['cs-agent-001'] || {}
+  const q1Topics = agentTopicDistributions['2024-Q1'] || {}
+  const q2Topics = agentTopicDistributions['2024-Q2'] || {}
   const q3Topics = agentTopicDistributions['2024-Q3'] || {}
   const q4Topics = agentTopicDistributions['2024-Q4'] || {}
+  const driftAlert = driftAlerts[agentId] || driftAlerts['cs-agent-001']
 
   // Format topics for chart
   const q3Data = Object.entries(q3Topics).map(([name, value]) => ({
@@ -50,8 +53,10 @@ export default function AgentBehavior() {
           <div>
             <p className="font-semibold text-danger-dark">Behavior Drift Detected</p>
             <p className="text-sm text-danger-dark/80 mt-1">
-              A new topic <strong>"no snow"</strong> has emerged in Q4, accounting for 19% of conversations.
-              This off-topic weather discussion is likely affecting resolution rates and customer satisfaction.
+              {driftAlert.headerText}
+            </p>
+            <p className="text-sm text-danger-dark/70 mt-1">
+              {driftAlert.bodyText}
             </p>
           </div>
         </div>
@@ -70,14 +75,14 @@ export default function AgentBehavior() {
               <div
                 key={conv.id}
                 className={`p-4 rounded-lg border ${
-                  conv.topic === 'no-snow'
+                  conv.topic === driftAlert?.topicKey
                     ? 'border-danger bg-danger-light/30'
                     : 'border-slate-200 bg-slate-50'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Badge variant={conv.topic === 'no-snow' ? 'danger' : 'neutral'}>
+                    <Badge variant={conv.topic === driftAlert?.topicKey ? 'danger' : 'neutral'}>
                       {conv.topic.replace('-', ' ')}
                     </Badge>
                     <Badge variant={conv.resolved ? 'success' : 'warning'}>
@@ -139,8 +144,7 @@ export default function AgentBehavior() {
             <DonutChart data={q4Data} height={250} />
             <div className="mt-4 p-3 bg-danger-light rounded-lg">
               <p className="text-sm text-danger-dark">
-                <strong>New Topic Alert:</strong> "No Snow" topic (19%) was not present in previous quarters
-                and represents off-topic conversations about weather.
+                <strong>New Topic Alert:</strong> {driftAlert.cardAlert}
               </p>
             </div>
           </Card>
@@ -176,8 +180,10 @@ export default function AgentBehavior() {
             <tbody className="divide-y divide-slate-100">
               {Object.entries(q4Topics).map(([topic, q4Value]) => {
                 const q3Value = q3Topics[topic] || 0
+                const q2Value = q2Topics[topic]
+                const q1Value = q1Topics[topic]
                 const change = q4Value - q3Value
-                const isNew = !q3Topics[topic]
+                const isNew = !q3Topics[topic] && !q2Topics[topic] && !q1Topics[topic]
 
                 return (
                   <tr key={topic} className={isNew ? 'bg-danger-light/30' : ''}>
@@ -188,19 +194,19 @@ export default function AgentBehavior() {
                           style={{ backgroundColor: topicColors[topic] || '#94A3B8' }}
                         />
                         <span className="font-medium capitalize">
-                          {topic.replace('-', ' ')}
+                          {topic.replace(/-/g, ' ')}
                         </span>
                         {isNew && <Badge variant="danger" size="sm">New</Badge>}
                       </div>
                     </td>
                     <td className="py-3 text-center text-slate-500">
-                      {topic === 'no-snow' ? '-' : Math.round(q3Value * 1.08)}%
+                      {q1Value != null ? `${q1Value}%` : '-'}
                     </td>
                     <td className="py-3 text-center text-slate-500">
-                      {topic === 'no-snow' ? '-' : Math.round(q3Value * 1.03)}%
+                      {q2Value != null ? `${q2Value}%` : '-'}
                     </td>
                     <td className="py-3 text-center text-slate-500">
-                      {topic === 'no-snow' ? '-' : q3Value}%
+                      {q3Value ? `${q3Value}%` : '-'}
                     </td>
                     <td className="py-3 text-center font-medium">{q4Value}%</td>
                     <td className={`py-3 text-right font-medium ${

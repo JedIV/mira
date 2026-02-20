@@ -22,6 +22,7 @@ const timelineLines = [
 ]
 
 const primaryMetricLabels = {
+  escalationRate: 'Escalation Rate',
   resolutionRate: 'Resolution Rate',
   customerSatisfaction: 'Customer Satisfaction',
   throughput: 'Throughput',
@@ -50,7 +51,8 @@ export default function AgentDetail() {
   const accessInfo = getAccessByAgentId(agentId || 'cs-agent-001')
   const source = platformSources.find(s => s.id === agent.source)
   const isQ4Drop = agent.id === 'cs-agent-001'
-  const timelineData = generateAgentTimelineData(12, isQ4Drop)
+  const isKycDrop = agent.id === 'kyc-agent-016'
+  const timelineData = generateAgentTimelineData(12, isKycDrop ? 'biz-only' : isQ4Drop)
   const agentBusinessMetrics = businessMetrics[agent.id] || {}
   const primaryMetricKey = Object.keys(primaryMetricLabels).find((key) => key in agentBusinessMetrics)
   const primaryMetric = primaryMetricKey
@@ -287,12 +289,14 @@ export default function AgentDetail() {
           }
         />
 
-        {/* Q4 Drop alert for CS agent */}
-        {isQ4Drop && (
+        {/* Q4 Drop alert — varies by agent */}
+        {(isQ4Drop || isKycDrop) && (
           <div className="mb-4 p-4 bg-warning-light border border-warning rounded-lg">
             <p className="font-medium text-warning-dark">Performance Drop Detected</p>
             <p className="text-sm text-warning-dark/80 mt-1">
-              Resolution rate dropped from 85% to 78% starting in October. This correlates with a new "no snow" topic pattern detected in behavior analysis.
+              {isQ4Drop
+                ? 'Resolution rate dropped from 85% to 78% starting in October. This correlates with a new "no snow" topic pattern detected in behavior analysis.'
+                : 'Business impact has declined steadily since Q4. Escalation rate climbed from 8% to 23% over 6 weeks — operational health metrics remain stable, masking the business degradation.'}
             </p>
           </div>
         )}
