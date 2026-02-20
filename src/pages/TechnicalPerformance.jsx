@@ -46,7 +46,7 @@ export default function TechnicalPerformance() {
         />
         <MetricCard
           label="Requests/min"
-          value={formatNumber(3240)}
+          value={formatNumber(58200)}
           trend="up"
           trendValue={12.5}
         />
@@ -73,11 +73,11 @@ export default function TechnicalPerformance() {
             </div>
             <div>
               <p className="text-xs text-slate-500">Peak Volume</p>
-              <p className="text-lg font-semibold text-slate-900">2,847</p>
+              <p className="text-lg font-semibold text-slate-900">51,200</p>
             </div>
             <div>
               <p className="text-xs text-slate-500">Total Today</p>
-              <p className="text-lg font-semibold text-slate-900">45.2K</p>
+              <p className="text-lg font-semibold text-slate-900">854K</p>
             </div>
           </div>
         </Card>

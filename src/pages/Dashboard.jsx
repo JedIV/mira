@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardHeader } from '../components/common'
-import { agents, platformSources } from '../data/agents'
+import { agents, platformSources, DISPLAY_TOTAL_AGENTS, DISPLAY_ACTIVE_AGENTS, DISPLAY_DEGRADED_AGENTS, DISPLAY_MAINTENANCE_AGENTS, DISPLAY_IMPACT_COUNTS } from '../data/agents'
 import PlatformLogo from '../components/PlatformLogo'
 import {
   LineChart as RechartsLine,
@@ -84,13 +84,13 @@ const eventTypeConfig = {
   metric: { color: 'bg-blue-500', icon: '↗' },
 }
 
-// Compute stats from agent data
-const activeAgents = agents.filter(a => a.status === 'active').length
-const degradedAgents = agents.filter(a => a.status === 'degraded').length
-const maintenanceAgents = agents.filter(a => a.status === 'maintenance').length
-const greenImpact = agents.filter(a => a.businessImpact === 'green').length
-const yellowImpact = agents.filter(a => a.businessImpact === 'yellow').length
-const redImpact = agents.filter(a => a.businessImpact === 'red').length
+// Display stats use scale-overrides to reflect the full 4,127-agent portfolio narrative
+const activeAgents = DISPLAY_ACTIVE_AGENTS
+const degradedAgents = DISPLAY_DEGRADED_AGENTS
+const maintenanceAgents = DISPLAY_MAINTENANCE_AGENTS
+const greenImpact = DISPLAY_IMPACT_COUNTS.green
+const yellowImpact = DISPLAY_IMPACT_COUNTS.yellow
+const redImpact = DISPLAY_IMPACT_COUNTS.red
 const totalWarnings = agents.reduce((sum, a) => sum + (a.operationalRisks?.securityWarnings || 0), 0)
 
 // Generate deterministic sparkline data for an agent
@@ -295,7 +295,7 @@ function StatusBoard() {
       {/* Top stats strip */}
       <div className="grid grid-cols-6 divide-x divide-slate-100 border-b border-slate-100">
         <div className="px-4 py-3 text-center">
-          <p className="text-2xl font-bold text-slate-900">{agents.length}</p>
+          <p className="text-2xl font-bold text-slate-900">{DISPLAY_TOTAL_AGENTS.toLocaleString()}</p>
           <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Total Agents</p>
         </div>
         <div className="px-4 py-3 text-center">
@@ -370,7 +370,7 @@ export default function Dashboard() {
             <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-1">ABC Bank &middot; Mira</p>
             <h1 className="text-2xl font-bold">Agent Overview</h1>
             <p className="text-sm text-slate-300 mt-2 max-w-2xl">
-              Monitor business impact, operational health, and risk across {agents.length} agents deployed on {platformSources.length} platforms.
+              Monitor business impact, operational health, and risk across {DISPLAY_TOTAL_AGENTS.toLocaleString()} agents deployed on {platformSources.length} platforms.
             </p>
           </div>
         </div>

@@ -1,3 +1,46 @@
+// ─── Display override constants for 4,000+ scale narrative ──────────────────
+// ABC Bank has 4,127 agents total — most from self-service Copilot usage
+// We keep the actual agent records small; these constants drive summary displays
+export const DISPLAY_TOTAL_AGENTS = 4127
+export const DISPLAY_ACTIVE_AGENTS = 3982
+export const DISPLAY_DEGRADED_AGENTS = 48
+export const DISPLAY_MAINTENANCE_AGENTS = 12
+export const DISPLAY_IMPACT_COUNTS = { green: 3400, yellow: 580, red: 147 }
+
+// Team-level display counts — scaled to reflect the full 4,127 agent portfolio.
+// Self-service teams (Copilot-sourced) dominate. Alphabetical order matches nav.
+export const displayTeamCounts = {
+  'Branch Operations': 28,
+  'Business Intelligence': 30,
+  'Collections': 17,
+  'Compliance': 40,
+  'Customer Experience': 52,
+  'Data Analytics': 44,
+  'Data Engineering': 28,
+  'Data Governance': 31,
+  'Digital Banking': 39,
+  'Financial Reporting': 35,
+  'Human Resources': 26,
+  'IT Operations': 43,
+  'Lending Operations': 47,
+  'Marketing': 24,
+  'Operations': 20,
+  'Payments': 45,
+  'Risk Analytics': 38,
+  'Risk Management': 65,
+  'Self-Service — Engineering': 545,
+  'Self-Service — Executive': 145,
+  'Self-Service — Facilities': 170,
+  'Self-Service — Finance': 490,
+  'Self-Service — HR': 460,
+  'Self-Service — Legal': 285,
+  'Self-Service — Marketing': 410,
+  'Self-Service — Operations': 375,
+  'Self-Service — Sales': 520,
+  'Treasury': 35,
+  'Wealth Management': 40,
+}
+
 // Hand-crafted primary agents (these appear in demos)
 const coreAgents = [
   {
@@ -313,6 +356,27 @@ const coreAgents = [
     businessImpactLabel: 'Routing accuracy at 96%',
     aiInsight: 'Escalation Handler Agent is performing well with 96% routing accuracy. Average escalation handling time is 2.3 minutes. No missed escalations in the past 7 days.',
     operationalHealth: { responseTime: 500, responseTimeTrend: 'stable', errorRate: 0.1, errorRateTrend: 'stable' },
+    operationalRisks: { securityWarnings: 0, dataExposure: 0 },
+  },
+  {
+    id: 'kyc-agent-016',
+    name: 'KYC Verification Agent',
+    description: 'Automates identity verification and document classification for credit applications',
+    status: 'active',
+    source: 'bedrock',
+    team: 'Risk Management',
+    domain: 'Compliance',
+    owner: 'Priya Sharma',
+    channels: ['api'],
+    createdAt: '2024-04-01',
+    lastActive: '2024-12-06T14:35:00Z',
+    version: '2.1.0',
+    criticality: 'high',
+    tags: ['kyc', 'compliance', 'identity-verification', 'credit'],
+    businessImpact: 'red',
+    businessImpactLabel: 'Escalation rate 23% vs <10% target — credit processing time doubled',
+    aiInsight: 'KYC Verification Agent is operationally healthy but missing critical business targets. Escalation rate has climbed from 8% to 23% over 6 weeks, routing a disproportionate number of credit applications to manual review. Average processing time has doubled from 2.1 to 4.2 days. Customer satisfaction for credit applicants dropped from 4.1 to 3.2. Immediate behavior analysis and model recalibration recommended.',
+    operationalHealth: { responseTime: 1100, responseTimeTrend: 'stable', errorRate: 0.2, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
   },
 ]
@@ -639,53 +703,54 @@ export const agents = [...coreAgents, ...generatedAgents]
 
 export const platformSources = [
   {
-    id: 'bedrock',
-    name: 'AWS Bedrock',
-    color: '#FF9900',
-    agentCount: agents.filter(a => a.source === 'bedrock').length,
-    description: 'Amazon foundation models'
-  },
-  {
     id: 'copilot',
     name: 'Microsoft Copilot',
     color: '#00A4EF',
-    agentCount: agents.filter(a => a.source === 'copilot').length,
+    // Display count reflects full enterprise scale (self-service Copilot agents dominate)
+    agentCount: 3400,
     description: 'Microsoft AI assistant'
   },
   {
-    id: 'servicenow',
-    name: 'ServiceNow',
-    color: '#81B5A1',
-    agentCount: agents.filter(a => a.source === 'servicenow').length,
-    description: 'IT workflow automation'
+    id: 'bedrock',
+    name: 'AWS Bedrock',
+    color: '#FF9900',
+    agentCount: 180,
+    description: 'Amazon foundation models'
+  },
+  {
+    id: 'snowflake',
+    name: 'Snowflake Cortex',
+    color: '#29B5E8',
+    agentCount: 230,
+    description: 'Snowflake AI agents'
   },
   {
     id: 'langchain',
     name: 'LangChain',
     color: '#1C3C3C',
-    agentCount: agents.filter(a => a.source === 'langchain').length,
+    agentCount: 120,
     description: 'LLM framework agents'
+  },
+  {
+    id: 'servicenow',
+    name: 'ServiceNow',
+    color: '#81B5A1',
+    agentCount: 95,
+    description: 'IT workflow automation'
   },
   {
     id: 'n8n',
     name: 'n8n',
     color: '#EA4B71',
-    agentCount: agents.filter(a => a.source === 'n8n').length,
+    agentCount: 55,
     description: 'Workflow automation'
   },
   {
     id: 'dataiku',
     name: 'Dataiku',
     color: '#2AB1AC',
-    agentCount: agents.filter(a => a.source === 'dataiku').length,
+    agentCount: 47,
     description: 'Data science platform'
-  },
-  {
-    id: 'snowflake',
-    name: 'Snowflake Cortex',
-    color: '#29B5E8',
-    agentCount: agents.filter(a => a.source === 'snowflake').length,
-    description: 'Snowflake AI agents'
   },
 ]
 

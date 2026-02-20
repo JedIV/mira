@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Card, CardHeader, Badge, BusinessImpactBadge } from '../components/common'
-import { agents } from '../data/agents'
+import { agents, DISPLAY_IMPACT_COUNTS } from '../data/agents'
 import { businessMetrics } from '../data/metrics'
 import { ChevronRightIcon, ExclamationTriangleIcon } from '../components/navigation/Icons'
 
@@ -32,6 +32,7 @@ const impactConfig = {
 }
 
 const primaryMetricConfig = [
+  { key: 'escalationRate', label: 'Escalation Rate', format: (v) => `${v}%` },
   { key: 'resolutionRate', label: 'Resolution Rate', format: (v) => `${v}%` },
   { key: 'customerSatisfaction', label: 'Customer Satisfaction', format: (v) => `${v}/5` },
   { key: 'detectionRate', label: 'Detection Rate', format: (v) => `${v}%` },
@@ -59,11 +60,10 @@ function getPrimaryMetric(agentId) {
 }
 
 export default function BusinessPerformance() {
-  const impactCounts = {
-    green: agents.filter((agent) => agent.businessImpact === 'green').length,
-    yellow: agents.filter((agent) => agent.businessImpact === 'yellow').length,
-    red: agents.filter((agent) => agent.businessImpact === 'red').length,
-  }
+  // Display counts reflect full 4,127-agent portfolio scale
+  const impactCounts = DISPLAY_IMPACT_COUNTS
+  // Real agent filter (for table and alert logic)
+  const realRedCount = agents.filter((agent) => agent.businessImpact === 'red').length
 
   const highlightedAgents = [...agents]
     .filter((agent) => agent.businessImpact !== 'green')
@@ -105,7 +105,7 @@ export default function BusinessPerformance() {
                   <span className={`w-2.5 h-2.5 rounded-full ${config.dotClass}`} />
                   <p className={`font-semibold ${config.textClass}`}>{config.label}</p>
                 </div>
-                <p className={`text-2xl font-bold ${config.textClass}`}>{impactCounts[impact]}</p>
+                <p className={`text-2xl font-bold ${config.textClass}`}>{impactCounts[impact].toLocaleString()}</p>
               </div>
               <p className="text-sm text-slate-600">{config.subtitle}</p>
             </Card>
@@ -113,7 +113,7 @@ export default function BusinessPerformance() {
         })}
       </div>
 
-      {impactCounts.red > 0 && (
+      {realRedCount > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
           <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
             <ExclamationTriangleIcon className="w-4 h-4 text-red-600" />
@@ -121,7 +121,7 @@ export default function BusinessPerformance() {
           <div>
             <p className="font-medium text-red-700">Business Risk Alert</p>
             <p className="text-sm text-red-700/85 mt-1">
-              {impactCounts.red} {impactCounts.red === 1 ? 'agent is' : 'agents are'} missing business targets. Review behavior analysis, run validation tests, and check governance status before the next release.
+              {impactCounts.red.toLocaleString()} agents are missing business targets. Review behavior analysis, run validation tests, and check governance status before the next release.
             </p>
           </div>
         </div>

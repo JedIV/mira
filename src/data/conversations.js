@@ -127,7 +127,136 @@ export const topicColors = {
   'loan-questions': '#10B981',
   'general': '#94A3B8',
   'no-snow': '#EF4444', // Highlighted as anomaly
+  // KYC Verification Agent topics
+  'standard-verification': '#06B6D4',
+  'document-review': '#8B5CF6',
+  'risk-scoring': '#10B981',
+  'manual-escalation': '#EF4444', // Highlighted — growing problem
 }
+
+// Drift alert configs per agent — used by AgentBehavior to show dynamic alert text
+export const driftAlerts = {
+  'cs-agent-001': {
+    topicKey: 'no-snow',
+    displayName: '"No Snow"',
+    percentage: 19,
+    headerText: 'A new topic "No Snow" has emerged in Q4, accounting for 19% of conversations.',
+    bodyText: 'This off-topic weather discussion is likely affecting resolution rates and customer satisfaction.',
+    cardAlert: '"No Snow" topic (19%) was not present in previous quarters and represents off-topic conversations about weather.',
+  },
+  'kyc-agent-016': {
+    topicKey: 'manual-escalation',
+    displayName: '"Manual Escalation"',
+    percentage: 28,
+    headerText: 'Escalation behavior has drifted significantly in Q4 — "Manual Escalation" now accounts for 28% of processing volume.',
+    bodyText: 'Escalation rate has increased from 8% to 23% over 6 weeks. This agent is routing a disproportionate number of credit applications to manual review, doubling processing time and degrading customer satisfaction.',
+    cardAlert: '"Manual Escalation" category (28%) grew from near-zero in Q3. The agent is systematically over-escalating credit applications that should qualify for automated approval.',
+  },
+}
+
+// Topic distributions for KYC Verification Agent
+// Q3 = healthy baseline; Q4 shows drift toward manual escalation
+topicDistributions['kyc-agent-016'] = {
+  '2024-Q1': {
+    'standard-verification': 58,
+    'document-review': 28,
+    'risk-scoring': 14,
+  },
+  '2024-Q2': {
+    'standard-verification': 57,
+    'document-review': 29,
+    'risk-scoring': 14,
+  },
+  '2024-Q3': {
+    'standard-verification': 55,
+    'document-review': 30,
+    'risk-scoring': 15,
+  },
+  '2024-Q4': {
+    'standard-verification': 38,
+    'document-review': 22,
+    'risk-scoring': 12,
+    'manual-escalation': 28, // NEW — this is the drift
+  },
+}
+
+// Sample processing events for KYC Verification Agent (API-based, not chat)
+sampleConversations['kyc-agent-016'] = [
+  {
+    id: 'kyc-conv-001',
+    timestamp: '2024-12-06T14:22:00Z',
+    channel: 'api',
+    topic: 'manual-escalation',
+    sentiment: 'neutral',
+    resolved: true,
+    duration: 4820,
+    messages: [
+      { role: 'user', content: 'Credit application submitted — residential mortgage $485,000, 15-year fixed, applicant income documentation attached.' },
+      { role: 'agent', content: 'Documents classified: proof of income ✓, government ID ✓, bank statements ✓. Identity verification: VERIFIED (94%). Risk score: 52/100. Decision: Escalated to manual review — score near automated approval boundary.' },
+    ],
+    reasoning: [
+      { step: 1, thought: 'All required documents present and legible', action: 'Classify documents and validate completeness', confidence: 0.99 },
+      { step: 2, thought: 'Identity verified with high confidence', action: 'Call external identity verification API', confidence: 0.94 },
+      { step: 3, thought: 'Risk score 52 — near threshold of 50', action: 'Compute risk score from income, credit, and LTV data', confidence: 0.71 },
+      { step: 4, thought: 'Borderline score — insufficient confidence for automated approval', action: 'Escalate to manual review queue', confidence: 0.68 },
+    ],
+  },
+  {
+    id: 'kyc-conv-002',
+    timestamp: '2024-12-06T13:05:00Z',
+    channel: 'api',
+    topic: 'standard-verification',
+    sentiment: 'positive',
+    resolved: true,
+    duration: 3210,
+    messages: [
+      { role: 'user', content: 'Credit application submitted — auto loan $22,000, 48-month term, full documentation package.' },
+      { role: 'agent', content: 'Documents classified: paystub ✓, government ID ✓. Identity verification: VERIFIED (99%). Risk score: 29/100. Decision: Approved — clean profile, all verification checks passed.' },
+    ],
+    reasoning: [
+      { step: 1, thought: 'Complete documentation set received', action: 'Classify and validate 2 documents', confidence: 0.99 },
+      { step: 2, thought: 'Strong identity match with no anomalies', action: 'Call external identity verification API', confidence: 0.99 },
+      { step: 3, thought: 'Low risk score, well below approval threshold', action: 'Compute risk score', confidence: 0.96 },
+      { step: 4, thought: 'All checks passed — automated approval appropriate', action: 'Issue approval decision', confidence: 0.97 },
+    ],
+  },
+  {
+    id: 'kyc-conv-003',
+    timestamp: '2024-12-06T11:48:00Z',
+    channel: 'api',
+    topic: 'manual-escalation',
+    sentiment: 'neutral',
+    resolved: true,
+    duration: 5140,
+    messages: [
+      { role: 'user', content: 'Credit application submitted — HELOC $125,000, applicant owns primary residence.' },
+      { role: 'agent', content: 'Documents classified: all present ✓. Identity verification: VERIFIED (91%). Risk score: 61/100. Decision: Escalated — elevated risk score for HELOC; requires senior underwriter review.' },
+    ],
+    reasoning: [
+      { step: 1, thought: 'HELOC application — higher documentation standard applies', action: 'Classify and validate document set', confidence: 0.97 },
+      { step: 2, thought: 'Identity verified, slight confidence reduction due to address mismatch', action: 'Call identity verification API', confidence: 0.91 },
+      { step: 3, thought: 'Risk score 61 — above threshold, HELOC policy requires manual review above 55', action: 'Compute risk score with LTV analysis', confidence: 0.88 },
+      { step: 4, thought: 'Policy mandates escalation at this score for secured lending', action: 'Route to senior underwriter queue', confidence: 0.93 },
+    ],
+  },
+  {
+    id: 'kyc-conv-004',
+    timestamp: '2024-12-05T16:30:00Z',
+    channel: 'api',
+    topic: 'document-review',
+    sentiment: 'neutral',
+    resolved: false,
+    duration: 2180,
+    messages: [
+      { role: 'user', content: 'Credit application submitted — mortgage refinance $265,000. Document resubmission (bank statement).' },
+      { role: 'agent', content: 'Document classification failed — bank statement confidence score 57%, below minimum threshold of 85%. Document appears to be a scan of a printout. Applicant must resubmit original digital statement.' },
+    ],
+    reasoning: [
+      { step: 1, thought: 'Resubmission flag — checking updated document quality', action: 'Reclassify updated document set', confidence: 0.82 },
+      { step: 2, thought: 'Image quality insufficient for reliable classification', action: 'Flag low-confidence document for resubmission', confidence: 0.94 },
+    ],
+  },
+]
 
 export const getConversationsByAgent = (agentId) => sampleConversations[agentId] || []
 

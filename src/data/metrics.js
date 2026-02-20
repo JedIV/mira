@@ -72,6 +72,14 @@ export const technicalMetrics = {
     p95Latency: 6.0,
     p99Latency: 9.5,
   },
+  'kyc-agent-016': {
+    uptime: 99.9,
+    avgResponseTime: 1.1,
+    errorRate: 0.2,
+    requestsPerMinute: 38,
+    p95Latency: 1.8,
+    p99Latency: 2.9,
+  },
 }
 
 // Business metrics per agent
@@ -112,6 +120,18 @@ export const businessMetrics = {
     avgOnboardingTime: 8.5,
     customersOnboarded: 2340,
     dropoffRate: 10.8,
+  },
+  'kyc-agent-016': {
+    // Primary KPI: escalation rate — currently 23%, target <10%, trending up
+    escalationRate: 23,
+    escalationTarget: 10,
+    previousEscalationRate: 8,
+    // Secondary KPIs showing business degradation
+    manualCheckVolumeChange: 62,     // +62% vs prior quarter
+    avgProcessingTime: 4.2,          // days — was 2.1 days (doubled)
+    previousProcessingTime: 2.1,
+    customerSatisfaction: 3.2,       // dropped from 4.1
+    previousSatisfaction: 4.1,
   },
 }
 
@@ -217,8 +237,8 @@ export function generateAgentTimelineData(months = 12, q4Drop = false) {
 // Critical agents with their status
 export const criticalAgents = [
   { id: 'fraud-agent-002', name: 'Fraud Detection', uptime: 99.99, responseTime: 0.15, errorRate: 0.01, status: 'healthy' },
+  { id: 'kyc-agent-016', name: 'KYC Verification', uptime: 99.9, responseTime: 1.1, errorRate: 0.2, status: 'healthy' },
   { id: 'cs-agent-001', name: 'Customer Service', uptime: 99.7, responseTime: 1.2, errorRate: 0.3, status: 'healthy' },
   { id: 'compliance-007', name: 'Compliance Monitor', uptime: 99.95, responseTime: 0.8, errorRate: 0.05, status: 'healthy' },
   { id: 'loan-agent-003', name: 'Loan Processing', uptime: 99.5, responseTime: 4.5, errorRate: 0.8, status: 'warning' },
-  { id: 'escalation-015', name: 'Escalation Handler', uptime: 99.8, responseTime: 0.5, errorRate: 0.1, status: 'healthy' },
 ]

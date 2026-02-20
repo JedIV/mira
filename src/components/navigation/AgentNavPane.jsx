@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
-import { getAgentsByTeamGrouped } from '../../data/agents'
+import { getAgentsByTeamGrouped, displayTeamCounts } from '../../data/agents'
 import { ChevronRightIcon } from './Icons'
 
 export default function AgentNavPane() {
@@ -67,7 +67,7 @@ export default function AgentNavPane() {
                 }`}
               />
               <span className="truncate">{team}</span>
-              <span className="ml-auto text-slate-300 font-normal normal-case text-[10px]">{teamAgents.length}</span>
+              <span className="ml-auto text-slate-300 font-normal normal-case text-[10px]">{displayTeamCounts[team] ?? teamAgents.length}</span>
             </button>
             {!collapsed[team] && (
               <div className="ml-2">
