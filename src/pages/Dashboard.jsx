@@ -19,7 +19,7 @@ import {
 
 const dimensions = [
   {
-    name: 'Business Impact',
+    name: 'Business KPI Status',
     description: 'KPI tracking with red/yellow/green status across all agents',
     icon: CurrencyDollarIcon,
     href: '/performance/business',
@@ -163,7 +163,7 @@ function TopAgentsTable() {
               <th className="text-left text-[10px] uppercase tracking-wider font-semibold px-6 py-2.5">Agent</th>
               <th className="text-left text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Platform</th>
               <th className="text-left text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Status</th>
-              <th className="text-left text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Impact</th>
+              <th className="text-left text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">KPI</th>
               <th className="text-right text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Resp. Time</th>
               <th className="text-right text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Error Rate</th>
               <th className="text-left text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Activity (14d)</th>
@@ -317,7 +317,7 @@ function StatusBoard() {
             <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500 ml-1" />
             <span className="text-lg font-bold text-slate-900">{redImpact}</span>
           </div>
-          <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Impact (R/Y/G)</p>
+          <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Business KPI</p>
         </div>
         <div className="px-4 py-3 text-center">
           <p className="text-2xl font-bold text-slate-900">{platformSources.length}</p>
@@ -367,10 +367,10 @@ export default function Dashboard() {
       <div className="page-header">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-1">ABC Bank &middot; Mira</p>
+            <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-1">Dataiku Agent Management</p>
             <h1 className="text-2xl font-bold">Agent Overview</h1>
             <p className="text-sm text-slate-300 mt-2 max-w-2xl">
-              Monitor business impact, operational health, and risk across {DISPLAY_TOTAL_AGENTS.toLocaleString()} agents deployed on {platformSources.length} platforms.
+              Monitor business KPIs, operational health, and risk across {DISPLAY_TOTAL_AGENTS.toLocaleString()} agents deployed on {platformSources.length} platforms.
             </p>
           </div>
         </div>

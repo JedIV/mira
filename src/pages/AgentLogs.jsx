@@ -104,8 +104,8 @@ function SessionRow({ session }) {
 
 export default function AgentLogs() {
   const { agentId } = useParams()
-  const agent = getAgentById(agentId || 'cs-agent-001')
-  const sessions = getSessionsForAgent(agentId || 'cs-agent-001')
+  const agent = getAgentById(agentId)
+  const sessions = getSessionsForAgent(agentId)
 
   if (!agent) {
     return <div className="text-center py-12 text-slate-500">Agent not found</div>

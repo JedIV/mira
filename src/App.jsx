@@ -11,7 +11,7 @@ import BehaviorTrends from './pages/BehaviorTrends'
 import Testing from './pages/Testing'
 import Governance from './pages/Governance'
 import AgentAccess from './pages/AgentAccess'
-import Platforms from './pages/Platforms'
+import Settings from './pages/Settings'
 import AddPlatform from './pages/AddPlatform'
 import Login from './pages/Login'
 
@@ -31,7 +31,7 @@ function App() {
         <Route path="behavior/trends" element={<BehaviorTrends />} />
         <Route path="testing" element={<Testing />} />
         <Route path="governance" element={<Governance />} />
-        <Route path="platforms" element={<Platforms />} />
+        <Route path="settings" element={<Settings />} />
         <Route path="platforms/add" element={<AddPlatform />} />
       </Route>
     </Routes>

@@ -276,19 +276,7 @@ function PlatformCard({ platform }) {
 
 export default function Platforms() {
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="page-header">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-1">Settings</p>
-            <h1 className="text-2xl font-bold">Platforms & Connections</h1>
-            <p className="text-sm text-slate-300 mt-2 max-w-2xl">
-              Manage connected agent platforms, configure scanning, and add new integrations.
-            </p>
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {connectedPlatforms.map((platform) => (
           <PlatformCard key={platform.id} platform={platform} />

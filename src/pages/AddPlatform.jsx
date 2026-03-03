@@ -145,14 +145,14 @@ function StepConfigureScan() {
   return (
     <div className="max-w-xl">
       <h2 className="text-lg font-bold text-slate-900 mb-1">Configure Scanning</h2>
-      <p className="text-sm text-slate-500 mb-6">Set up how Mira discovers and monitors agents on this platform.</p>
+      <p className="text-sm text-slate-500 mb-6">Set up how Dataiku Agent Management discovers and monitors agents on this platform.</p>
 
       <div className="space-y-6">
         <div className="flex items-start justify-between p-4 rounded-xl border border-slate-200 bg-white">
           <div className="pr-4">
             <p className="font-semibold text-slate-900 text-sm">Proactive Scan</p>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              Automatically discover new agents and monitor changes. Mira will periodically scan the connected platform for new or updated agents.
+              Automatically discover new agents and monitor changes. Dataiku Agent Management will periodically scan the connected platform for new or updated agents.
             </p>
           </div>
           <button
@@ -286,7 +286,7 @@ function StepScanResults({ platformId }) {
     <div>
       <h2 className="text-lg font-bold text-slate-900 mb-1">Discovered Agents</h2>
       <p className="text-sm text-slate-500 mb-6">
-        Found {results.length} agent{results.length !== 1 ? 's' : ''}. Select which ones to import into Mira.
+        Found {results.length} agent{results.length !== 1 ? 's' : ''}. Select which ones to import into Dataiku Agent Management.
       </p>
 
       <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
@@ -383,7 +383,7 @@ export default function AddPlatform() {
         </div>
         <h1 className="text-2xl font-bold">Add Platform Connection</h1>
         <p className="text-sm text-slate-300 mt-2">
-          Connect a new agent platform to discover and import agents into Mira.
+          Connect a new agent platform to discover and import agents into Dataiku Agent Management.
         </p>
       </div>
 

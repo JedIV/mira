@@ -1,4 +1,9 @@
-export const riskAssessments = {
+import { agentRand } from './prng'
+import { getAgentById } from './agents'
+
+// ─── Curated risk assessments ───────────────────────────────────────────────
+
+const curatedRiskAssessments = {
   'cs-agent-001': {
     overall: 'medium',
     overallScore: 76,
@@ -28,6 +33,95 @@ export const riskAssessments = {
     assessedBy: 'AI Governance Team',
   },
 }
+
+// ─── Procedural generator ───────────────────────────────────────────────────
+
+const trends = ['stable', 'stable', 'stable', 'improving', 'declining']
+
+function scoreToLevel(score) {
+  if (score >= 90) return 'low'
+  if (score >= 70) return 'medium'
+  return 'high'
+}
+
+function generateRiskAssessment(agentId) {
+  const agent = getAgentById(agentId)
+  if (!agent) return null
+
+  const rand = agentRand(agentId)
+
+  // Base score influenced by businessImpact, criticality, and operationalRisks
+  let baseScore = 80
+  if (agent.businessImpact === 'yellow') baseScore -= 10
+  if (agent.businessImpact === 'red') baseScore -= 20
+  if (agent.criticality === 'high') baseScore -= 5
+  if (agent.operationalRisks.securityWarnings > 0) baseScore -= agent.operationalRisks.securityWarnings * 3
+  if (agent.operationalRisks.dataExposure > 0) baseScore -= agent.operationalRisks.dataExposure * 5
+
+  const dimScores = {}
+  const dimensions = ['compliance', 'security', 'operations', 'privacy', 'fairness']
+
+  dimensions.forEach(dim => {
+    // Each dimension varies around the base score
+    const variation = Math.floor(rand() * 20) - 8 // -8 to +11
+    let score = Math.max(40, Math.min(99, baseScore + variation))
+
+    // Security dimension penalized more if agent has security warnings
+    if (dim === 'security' && agent.operationalRisks.securityWarnings > 0) {
+      score = Math.max(40, score - 8)
+    }
+    // Privacy penalized if data exposure
+    if (dim === 'privacy' && agent.operationalRisks.dataExposure > 0) {
+      score = Math.max(40, score - 10)
+    }
+
+    const level = scoreToLevel(score)
+    const issues = level === 'low' ? (rand() > 0.7 ? 1 : 0) :
+      level === 'medium' ? (1 + Math.floor(rand() * 3)) :
+        (2 + Math.floor(rand() * 4))
+    const trend = trends[Math.floor(rand() * trends.length)]
+
+    dimScores[dim] = { score, level, issues, trend }
+  })
+
+  const overallScore = Math.round(
+    Object.values(dimScores).reduce((sum, d) => sum + d.score, 0) / 5
+  )
+  const overall = scoreToLevel(overallScore)
+
+  // Generate review dates offset from a base
+  const monthOffset = Math.floor(rand() * 3)
+  const lastAssessed = `2024-${String(10 + monthOffset).padStart(2, '0')}-${String(1 + Math.floor(rand() * 28)).padStart(2, '0')}`
+  const nextMonth = 10 + monthOffset + 1
+  const nextReview = nextMonth <= 12
+    ? `2024-${String(nextMonth).padStart(2, '0')}-${String(1 + Math.floor(rand() * 28)).padStart(2, '0')}`
+    : `2025-01-${String(1 + Math.floor(rand() * 28)).padStart(2, '0')}`
+
+  return {
+    overall,
+    overallScore,
+    dimensions: dimScores,
+    lastAssessed,
+    nextReview,
+    assessedBy: 'AI Governance Team',
+  }
+}
+
+// ─── Memoized getter ────────────────────────────────────────────────────────
+
+const riskCache = {}
+
+export function getRiskAssessment(agentId) {
+  if (curatedRiskAssessments[agentId]) return curatedRiskAssessments[agentId]
+  if (!riskCache[agentId]) {
+    riskCache[agentId] = generateRiskAssessment(agentId)
+  }
+  return riskCache[agentId]
+}
+
+// ─── Unchanged exports ──────────────────────────────────────────────────────
+
+export const riskAssessments = curatedRiskAssessments
 
 export const approvalWorkflows = [
   {

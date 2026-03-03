@@ -1,29 +1,109 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Card, StatusBadge, Badge, BusinessImpactBadge } from '../components/common'
 import { agents, platformSources } from '../data/agents'
 import { formatRelativeTime } from '../utils/formatters'
 import { MagnifyingGlassIcon, DocumentTextIcon } from '../components/navigation/Icons'
 import PlatformLogo from '../components/PlatformLogo'
+import { roles, roleCoversAgent } from '../data/roles'
 
-const teams = [...new Set(agents.map(a => a.team))]
 const statuses = ['all', 'active', 'degraded', 'maintenance', 'offline']
+const impacts = ['all', 'green', 'yellow', 'red']
+const impactLabels = { green: 'On Track', yellow: 'Needs Attention', red: 'Critical' }
+
+function RoleMultiSelect({ selected, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (!open) return
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  const toggle = (roleId) => {
+    if (selected.includes(roleId)) {
+      onChange(selected.filter(id => id !== roleId))
+    } else {
+      onChange([...selected, roleId])
+    }
+  }
+
+  const label = selected.length === 0
+    ? 'All Roles'
+    : selected.length === 1
+      ? roles.find(r => r.id === selected[0])?.name
+      : `${selected.length} Roles`
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="input w-auto flex items-center gap-2 cursor-pointer min-w-[140px]"
+      >
+        <span className="flex-1 text-left">{label}</span>
+        <svg className={`w-4 h-4 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute z-20 mt-1 w-64 bg-white border border-slate-200 rounded-lg shadow-lg py-1 animate-fade-in">
+          {selected.length > 0 && (
+            <button
+              onClick={() => onChange([])}
+              className="w-full text-left px-3 py-1.5 text-xs text-primary-600 hover:bg-slate-50 font-medium"
+            >
+              Clear selection
+            </button>
+          )}
+          {roles.map((role) => (
+            <label
+              key={role.id}
+              className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={selected.includes(role.id)}
+                onChange={() => toggle(role.id)}
+                className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span
+                className="w-2 h-2 rounded-full flex-shrink-0"
+                style={{ backgroundColor: role.color }}
+              />
+              <span className="text-sm text-slate-700">{role.name}</span>
+              <span className="text-xs text-slate-400 ml-auto">{role.type}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function AgentInventory() {
   const [searchParams] = useSearchParams()
 
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'all')
-  const [teamFilter, setTeamFilter] = useState('all')
+  const [impactFilter, setImpactFilter] = useState(searchParams.get('impact') || 'all')
+  const [roleFilter, setRoleFilter] = useState([])
   const [sourceFilter, setSourceFilter] = useState(searchParams.get('platform') || 'all')
 
   const filteredAgents = agents.filter(agent => {
     const matchesSearch = agent.name.toLowerCase().includes(search.toLowerCase()) ||
                          agent.description.toLowerCase().includes(search.toLowerCase())
     const matchesStatus = statusFilter === 'all' || agent.status === statusFilter
-    const matchesTeam = teamFilter === 'all' || agent.team === teamFilter
+    const matchesImpact = impactFilter === 'all' || agent.businessImpact === impactFilter
+    const matchesRole = roleFilter.length === 0 || roleFilter.some(roleId => {
+      const role = roles.find(r => r.id === roleId)
+      return role && roleCoversAgent(role, agent.id)
+    })
     const matchesSource = sourceFilter === 'all' || agent.source === sourceFilter
-    return matchesSearch && matchesStatus && matchesTeam && matchesSource
+    return matchesSearch && matchesStatus && matchesImpact && matchesRole && matchesSource
   })
 
   return (
@@ -51,29 +131,32 @@ export default function AgentInventory() {
             />
           </div>
 
-          {/* Status Filter */}
+          {/* Operational Status Filter */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="input w-auto"
           >
-            <option value="all">All Status</option>
+            <option value="all">All Operational Status</option>
             {statuses.slice(1).map(s => (
               <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
             ))}
           </select>
 
-          {/* Team Filter */}
+          {/* Business Impact Filter */}
           <select
-            value={teamFilter}
-            onChange={(e) => setTeamFilter(e.target.value)}
+            value={impactFilter}
+            onChange={(e) => setImpactFilter(e.target.value)}
             className="input w-auto"
           >
-            <option value="all">All Teams</option>
-            {teams.map(t => (
-              <option key={t} value={t}>{t}</option>
+            <option value="all">All Business Impact</option>
+            {impacts.slice(1).map(i => (
+              <option key={i} value={i}>{impactLabels[i]}</option>
             ))}
           </select>
+
+          {/* Role Filter */}
+          <RoleMultiSelect selected={roleFilter} onChange={setRoleFilter} />
 
           {/* Source Filter */}
           <select
@@ -109,9 +192,6 @@ export default function AgentInventory() {
                       {agent.name}
                     </Link>
                     <StatusBadge status={agent.status} />
-                    {agent.criticality === 'high' && (
-                      <Badge variant="danger" size="sm">Critical</Badge>
-                    )}
                     <BusinessImpactBadge impact={agent.businessImpact} />
                   </div>
                   <p className="text-sm text-slate-500 mt-1">{agent.description}</p>
@@ -119,6 +199,8 @@ export default function AgentInventory() {
                     <span>{agent.team}</span>
                     <span>•</span>
                     <span>{agent.domain}</span>
+                    <span>•</span>
+                    <span className="capitalize">Tier: {agent.criticality}</span>
                     <span>•</span>
                     <span>v{agent.version}</span>
                     <span>•</span>

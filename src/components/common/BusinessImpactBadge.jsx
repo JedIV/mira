@@ -2,17 +2,17 @@ import { Badge } from './Badge'
 
 const impactConfig = {
   green: {
-    label: 'Green',
+    label: 'On Track',
     variant: 'success',
     dotClass: 'bg-emerald-500',
   },
   yellow: {
-    label: 'Yellow',
+    label: 'Needs Attention',
     variant: 'warning',
     dotClass: 'bg-amber-500',
   },
   red: {
-    label: 'Red',
+    label: 'Critical',
     variant: 'danger',
     dotClass: 'bg-red-500',
   },

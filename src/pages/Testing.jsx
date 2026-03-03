@@ -1,14 +1,15 @@
 import { useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { Card, CardHeader, StatusBadge, Badge } from '../components/common'
-import { testScenarios, recentUpdates, testCategories, getTestSummary } from '../data/tests'
+import { getTestsByAgent, recentUpdates, testCategories, getTestSummary } from '../data/tests'
 import { formatDateTime, formatRelativeTime } from '../utils/formatters'
 import { CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon } from '../components/navigation/Icons'
 
-const agentId = 'cs-agent-001'
-const tests = testScenarios[agentId] || []
-const summary = getTestSummary(agentId)
-
 export default function Testing() {
+  const { agentId } = useParams()
+  const effectiveId = agentId || 'cs-agent-001'
+  const tests = getTestsByAgent(effectiveId)
+  const summary = getTestSummary(effectiveId)
   const [categoryFilter, setCategoryFilter] = useState('all')
 
   const filteredTests = categoryFilter === 'all'

@@ -1,9 +1,9 @@
 import { Card, CardHeader, StatusBadge, Badge } from '../components/common'
-import { riskAssessments, approvalWorkflows, complianceRequirements, getRiskLevel } from '../data/governance'
+import { getRiskAssessment, approvalWorkflows, complianceRequirements, getRiskLevel } from '../data/governance'
 import { formatDate, formatDateTime, formatRelativeTime } from '../utils/formatters'
 import { CheckCircleIcon, ClockIcon, ExclamationTriangleIcon } from '../components/navigation/Icons'
 
-const agentRisk = riskAssessments['cs-agent-001']
+const agentRisk = getRiskAssessment('cs-agent-001')
 
 export default function Governance() {
   return (

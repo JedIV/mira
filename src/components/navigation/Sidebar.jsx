@@ -68,7 +68,7 @@ export default function Sidebar() {
   return (
     <aside className="w-16 bg-sidebar flex flex-col items-center py-4 flex-shrink-0 border-r border-white/[0.06]">
       {/* Logo + Tenant */}
-      <Link to="/" className="flex flex-col items-center gap-1.5 mb-5" title="Mira — ABC Bank">
+      <Link to="/" className="flex flex-col items-center gap-1.5 mb-5" title="Dataiku Agent Management">
         <img src={dataikuLogo} alt="Dataiku" className="w-8 h-8" />
         <span className="text-[9px] font-semibold uppercase tracking-widest text-slate-500">ABC</span>
       </Link>
@@ -100,7 +100,7 @@ export default function Sidebar() {
       {/* Bottom: Settings + User */}
       <div className="flex flex-col items-center gap-2 mt-auto">
         <NavLink
-          to="/platforms"
+          to="/settings"
           title="Settings"
           className={({ isActive }) =>
             `w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-150 ${

@@ -1,4 +1,10 @@
-export const sampleConversations = {
+import { agentRand, pick, pickN } from './prng'
+import { getDomainContent } from './domainContent'
+import { getAgentById } from './agents'
+
+// ─── Curated data for demo agents ───────────────────────────────────────────
+
+const curatedConversations = {
   'cs-agent-001': [
     {
       id: 'conv-001',
@@ -86,7 +92,7 @@ export const sampleConversations = {
   ],
 }
 
-export const topicDistributions = {
+const curatedTopicDistributions = {
   'cs-agent-001': {
     '2024-Q1': {
       'account-inquiry': 38,
@@ -118,24 +124,32 @@ export const topicDistributions = {
       'no-snow': 19, // NEW TOPIC - Drift detected!
     },
   },
+  'kyc-agent-016': {
+    '2024-Q1': {
+      'standard-verification': 58,
+      'document-review': 28,
+      'risk-scoring': 14,
+    },
+    '2024-Q2': {
+      'standard-verification': 57,
+      'document-review': 29,
+      'risk-scoring': 14,
+    },
+    '2024-Q3': {
+      'standard-verification': 55,
+      'document-review': 30,
+      'risk-scoring': 15,
+    },
+    '2024-Q4': {
+      'standard-verification': 38,
+      'document-review': 22,
+      'risk-scoring': 12,
+      'manual-escalation': 28, // NEW — this is the drift
+    },
+  },
 }
 
-export const topicColors = {
-  'account-inquiry': '#06B6D4',
-  'transaction-help': '#8B5CF6',
-  'card-services': '#F59E0B',
-  'loan-questions': '#10B981',
-  'general': '#94A3B8',
-  'no-snow': '#EF4444', // Highlighted as anomaly
-  // KYC Verification Agent topics
-  'standard-verification': '#06B6D4',
-  'document-review': '#8B5CF6',
-  'risk-scoring': '#10B981',
-  'manual-escalation': '#EF4444', // Highlighted — growing problem
-}
-
-// Drift alert configs per agent — used by AgentBehavior to show dynamic alert text
-export const driftAlerts = {
+const curatedDriftAlerts = {
   'cs-agent-001': {
     topicKey: 'no-snow',
     displayName: '"No Snow"',
@@ -154,34 +168,8 @@ export const driftAlerts = {
   },
 }
 
-// Topic distributions for KYC Verification Agent
-// Q3 = healthy baseline; Q4 shows drift toward manual escalation
-topicDistributions['kyc-agent-016'] = {
-  '2024-Q1': {
-    'standard-verification': 58,
-    'document-review': 28,
-    'risk-scoring': 14,
-  },
-  '2024-Q2': {
-    'standard-verification': 57,
-    'document-review': 29,
-    'risk-scoring': 14,
-  },
-  '2024-Q3': {
-    'standard-verification': 55,
-    'document-review': 30,
-    'risk-scoring': 15,
-  },
-  '2024-Q4': {
-    'standard-verification': 38,
-    'document-review': 22,
-    'risk-scoring': 12,
-    'manual-escalation': 28, // NEW — this is the drift
-  },
-}
-
-// Sample processing events for KYC Verification Agent (API-based, not chat)
-sampleConversations['kyc-agent-016'] = [
+// Sample processing events for KYC Verification Agent
+curatedConversations['kyc-agent-016'] = [
   {
     id: 'kyc-conv-001',
     timestamp: '2024-12-06T14:22:00Z',
@@ -258,9 +246,203 @@ sampleConversations['kyc-agent-016'] = [
   },
 ]
 
-export const getConversationsByAgent = (agentId) => sampleConversations[agentId] || []
+// ─── Procedural generators ──────────────────────────────────────────────────
+
+const sentiments = ['positive', 'neutral', 'neutral', 'frustrated', 'confused']
+const channels = ['chat', 'email', 'api', 'voice', 'chat', 'chat']
+
+function generateConversations(agentId) {
+  const agent = getAgentById(agentId)
+  if (!agent) return []
+
+  const rand = agentRand(agentId)
+  const domain = getDomainContent(agent.domain)
+  const convCount = 3 + Math.floor(rand() * 4) // 3-6
+  const templates = pickN(rand, domain.conversations, convCount)
+
+  return templates.map((tmpl, i) => {
+    const hour = 8 + Math.floor(rand() * 9)
+    const minute = Math.floor(rand() * 60)
+    const dayOffset = Math.floor(rand() * 3)
+    const confidence1 = 0.70 + rand() * 0.29
+    const confidence2 = 0.65 + rand() * 0.30
+    const confidence3 = 0.60 + rand() * 0.35
+    const resolved = rand() > 0.25
+
+    return {
+      id: `gen-conv-${agentId}-${i + 1}`,
+      timestamp: `2024-12-0${6 - dayOffset}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00Z`,
+      channel: pick(rand, channels),
+      topic: tmpl.topic,
+      sentiment: pick(rand, sentiments),
+      resolved,
+      duration: Math.floor(rand() * 5000) + 120,
+      messages: [
+        { role: 'user', content: tmpl.userMsg },
+        { role: 'agent', content: tmpl.agentMsg.replace('{acct}', String(1000 + Math.floor(rand() * 9000))).replace('{date}', 'Dec ' + (1 + Math.floor(rand() * 6))).replace('{merchant}', 'Vendor-' + Math.floor(rand() * 100)) },
+      ],
+      reasoning: [
+        { step: 1, thought: 'Analyzing request context and intent', action: 'Classify incoming request', confidence: Math.round(confidence1 * 100) / 100 },
+        { step: 2, thought: 'Processing request with domain-specific logic', action: 'Execute primary action', confidence: Math.round(confidence2 * 100) / 100 },
+        { step: 3, thought: resolved ? 'Request fulfilled successfully' : 'Request requires follow-up', action: resolved ? 'Return result to user' : 'Flag for follow-up', confidence: Math.round(confidence3 * 100) / 100 },
+      ],
+    }
+  })
+}
+
+function generateTopicDistributions(agentId) {
+  const agent = getAgentById(agentId)
+  if (!agent) return {}
+
+  const rand = agentRand(agentId)
+  const domain = getDomainContent(agent.domain)
+  const topicCount = 3 + Math.floor(rand() * 3) // 3-5 topics
+  const topics = pickN(rand, domain.topics, topicCount)
+
+  // Determine if this agent should show drift (yellow/red agents, ~40% chance)
+  const hasDrift = (agent.businessImpact === 'red' || agent.businessImpact === 'yellow') && rand() < 0.4
+
+  const quarters = ['2024-Q1', '2024-Q2', '2024-Q3', '2024-Q4']
+  const result = {}
+
+  // Generate base percentages that sum to ~100
+  const baseWeights = topics.map(() => 5 + Math.floor(rand() * 30))
+  const baseTotal = baseWeights.reduce((s, w) => s + w, 0)
+  const basePercents = baseWeights.map(w => Math.round((w / baseTotal) * 100))
+  // Adjust last to make sum exactly 100
+  const diff = 100 - basePercents.reduce((s, p) => s + p, 0)
+  basePercents[0] += diff
+
+  quarters.forEach((q, qi) => {
+    const qData = {}
+    topics.forEach((topic, ti) => {
+      // Add small quarter-over-quarter variation
+      const variation = Math.floor(rand() * 5) - 2
+      let pct = basePercents[ti] + variation * (qi > 0 ? 1 : 0)
+      if (pct < 1) pct = 1
+
+      // If Q4 with drift, reduce existing topics to make room for drift topic
+      if (q === '2024-Q4' && hasDrift) {
+        pct = Math.max(1, Math.round(pct * 0.75))
+      }
+
+      qData[topic] = pct
+    })
+
+    // Inject drift topic in Q4
+    if (q === '2024-Q4' && hasDrift) {
+      const driftTopic = domain.topics.find(t => !topics.includes(t)) || 'unexpected-pattern'
+      const driftPct = 12 + Math.floor(rand() * 15) // 12-26%
+      qData[driftTopic] = driftPct
+    }
+
+    // Normalize to ~100%
+    const total = Object.values(qData).reduce((s, v) => s + v, 0)
+    if (total !== 100) {
+      const keys = Object.keys(qData)
+      const adjustment = 100 - total
+      qData[keys[0]] += adjustment
+    }
+
+    result[q] = qData
+  })
+
+  return result
+}
+
+function generateDriftAlert(agentId) {
+  const agent = getAgentById(agentId)
+  if (!agent) return null
+
+  // Only agents with drift in their topic distributions get alerts
+  const topics = generateTopicDistributions(agentId)
+  const q3 = topics['2024-Q3'] || {}
+  const q4 = topics['2024-Q4'] || {}
+
+  // Find a topic that exists in Q4 but not in Q3 (drift)
+  const newTopics = Object.keys(q4).filter(t => !(t in q3))
+  if (newTopics.length === 0) return null
+
+  const driftTopic = newTopics[0]
+  const pct = q4[driftTopic]
+  const displayName = `"${driftTopic.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}"`
+
+  return {
+    topicKey: driftTopic,
+    displayName,
+    percentage: pct,
+    headerText: `A new topic ${displayName} has emerged in Q4, accounting for ${pct}% of activity.`,
+    bodyText: `This topic was not present in previous quarters and may indicate behavioral drift requiring investigation.`,
+    cardAlert: `${displayName} topic (${pct}%) was not present in previous quarters and represents unexpected behavioral shift.`,
+  }
+}
+
+// ─── Topic color generation ─────────────────────────────────────────────────
+
+const topicColorPalette = [
+  '#06B6D4', '#8B5CF6', '#F59E0B', '#10B981', '#EC4899',
+  '#3B82F6', '#F97316', '#14B8A6', '#A855F7', '#EF4444',
+  '#6366F1', '#84CC16', '#0EA5E9', '#D946EF', '#22C55E',
+]
+
+// Curated colors for demo agents
+const curatedTopicColors = {
+  'account-inquiry': '#06B6D4',
+  'transaction-help': '#8B5CF6',
+  'card-services': '#F59E0B',
+  'loan-questions': '#10B981',
+  'general': '#94A3B8',
+  'no-snow': '#EF4444',
+  'standard-verification': '#06B6D4',
+  'document-review': '#8B5CF6',
+  'risk-scoring': '#10B981',
+  'manual-escalation': '#EF4444',
+}
+
+export function getTopicColor(topicKey) {
+  if (curatedTopicColors[topicKey]) return curatedTopicColors[topicKey]
+  // Hash-based stable color for generated topics
+  let hash = 0
+  for (let i = 0; i < topicKey.length; i++) {
+    hash = ((hash << 5) - hash + topicKey.charCodeAt(i)) | 0
+  }
+  return topicColorPalette[Math.abs(hash) % topicColorPalette.length]
+}
+
+// ─── Memoized getters ───────────────────────────────────────────────────────
+
+const convCache = {}
+const topicCache = {}
+const driftCache = {}
+
+export function getConversationsByAgent(agentId) {
+  if (curatedConversations[agentId]) return curatedConversations[agentId]
+  if (!convCache[agentId]) {
+    convCache[agentId] = generateConversations(agentId)
+  }
+  return convCache[agentId]
+}
+
+export function getTopicDistributions(agentId) {
+  if (curatedTopicDistributions[agentId]) return curatedTopicDistributions[agentId]
+  if (!topicCache[agentId]) {
+    topicCache[agentId] = generateTopicDistributions(agentId)
+  }
+  return topicCache[agentId]
+}
+
+export function getDriftAlert(agentId) {
+  if (curatedDriftAlerts[agentId]) return curatedDriftAlerts[agentId]
+  if (!(agentId in driftCache)) {
+    driftCache[agentId] = generateDriftAlert(agentId)
+  }
+  return driftCache[agentId]
+}
+
+// Legacy exports for backward compatibility
+export const topicColors = curatedTopicColors
 
 export const getTopicsByQuarter = (agentId, quarter) => {
-  const agentTopics = topicDistributions[agentId]
-  return agentTopics ? agentTopics[quarter] : null
+  const dist = getTopicDistributions(agentId)
+  return dist ? dist[quarter] : null
 }

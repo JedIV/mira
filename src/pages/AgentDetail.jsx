@@ -1,10 +1,11 @@
 import { useParams, Link } from 'react-router-dom'
-import { Card, CardHeader, StatusBadge, Badge } from '../components/common'
+import { Card, CardHeader, StatusBadge, Badge, BusinessImpactBadge } from '../components/common'
 import { MultiLineChart } from '../components/charts'
 import { getAgentById, platformSources } from '../data/agents'
 import { getAgentPlatformUrl } from '../data/platforms'
-import { generateAgentTimelineData, businessMetrics } from '../data/metrics'
+import { generateAgentTimelineData, getAgentKpiConfig, businessMetrics } from '../data/metrics'
 import { getAccessByAgentId } from '../data/access'
+import { getRolesForAgent } from '../data/roles'
 import { formatPercent } from '../utils/formatters'
 import PlatformLogo from '../components/PlatformLogo'
 import {
@@ -14,12 +15,6 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
 } from '../components/navigation/Icons'
-
-const timelineLines = [
-  { dataKey: 'Business Impact', name: 'Business Impact', color: '#2AB1AC' },
-  { dataKey: 'Operational Health', name: 'Operational Health', color: '#10B981' },
-  { dataKey: 'Operational Risk', name: 'Operational Risk', color: '#EF4444' },
-]
 
 const primaryMetricLabels = {
   escalationRate: 'Escalation Rate',
@@ -42,17 +37,21 @@ function formatBusinessMetric(key, value) {
 
 export default function AgentDetail() {
   const { agentId } = useParams()
-  const agent = getAgentById(agentId || 'cs-agent-001')
+  const agent = getAgentById(agentId)
 
   if (!agent) {
     return <div className="text-center py-12 text-slate-500">Agent not found</div>
   }
 
-  const accessInfo = getAccessByAgentId(agentId || 'cs-agent-001')
+  const accessInfo = getAccessByAgentId(agentId)
+  const roleEntries = getRolesForAgent(agentId)
   const source = platformSources.find(s => s.id === agent.source)
-  const isQ4Drop = agent.id === 'cs-agent-001'
-  const isKycDrop = agent.id === 'kyc-agent-016'
-  const timelineData = generateAgentTimelineData(12, isKycDrop ? 'biz-only' : isQ4Drop)
+  const kpiConfig = getAgentKpiConfig(agent.id)
+  const timelineData = generateAgentTimelineData(agent.id)
+  const timelineLines = [
+    { dataKey: kpiConfig.kpiLabel, name: kpiConfig.kpiLabel, color: '#2AB1AC' },
+    { dataKey: 'Error Rate', name: 'Error Rate', color: '#EF4444' },
+  ]
   const agentBusinessMetrics = businessMetrics[agent.id] || {}
   const primaryMetricKey = Object.keys(primaryMetricLabels).find((key) => key in agentBusinessMetrics)
   const primaryMetric = primaryMetricKey
@@ -98,9 +97,6 @@ export default function AgentDetail() {
               <h1 className="text-2xl font-bold text-slate-900">{agent.name}</h1>
               <span className="text-sm text-slate-400">v{agent.version}</span>
               <StatusBadge status={agent.status} />
-              {agent.criticality === 'high' && (
-                <Badge variant="danger">Critical</Badge>
-              )}
             </div>
             <p className="text-slate-600 mb-3">{agent.description}</p>
             <div className="flex flex-wrap gap-6 text-sm">
@@ -180,11 +176,11 @@ export default function AgentDetail() {
         </Card>
       )}
 
-      {/* Metric Cards: Business Impact, Operational Health, Operational Risks, User Access */}
+      {/* Metric Cards: Business KPI Status, Operational Health, Operational Risks, User Access */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Business Impact */}
+        {/* Business KPI Status */}
         <Card>
-          <CardHeader title="Business Impact" />
+          <CardHeader title="Business KPI Status" />
           <div className={`flex items-center gap-3 p-3 rounded-lg border ${impact.bg} ${impact.border}`}>
             <div className={`w-3 h-3 rounded-full ${impact.dot}`} />
             <span className={`text-sm font-medium ${impact.text}`}>
@@ -248,37 +244,46 @@ export default function AgentDetail() {
           </div>
         </Card>
 
-        {/* User Access */}
+        {/* Access Roles */}
         <Card>
-          <CardHeader title="User Access" />
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-500">Groups</span>
-              <span className="text-lg font-semibold text-slate-900">{accessInfo.summary.totalGroups}</span>
+          <CardHeader title="Access Roles" />
+          {roleEntries.length > 0 ? (
+            <div className="space-y-2.5">
+              {roleEntries.map(({ role, permissionLevel }) => (
+                <div key={role.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: role.color }} />
+                    <span className="text-sm font-medium text-slate-900">{role.name}</span>
+                  </div>
+                  <Badge
+                    variant={permissionLevel === 'admin' ? 'warning' : permissionLevel === 'execute' ? 'primary' : 'secondary'}
+                    size="sm"
+                  >
+                    {permissionLevel.charAt(0).toUpperCase() + permissionLevel.slice(1)}
+                  </Badge>
+                </div>
+              ))}
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-500">Total Users</span>
-              <span className="text-lg font-semibold text-slate-900">{accessInfo.summary.totalUsers.toLocaleString()}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-500">Active (24h)</span>
-              <span className="text-lg font-semibold text-slate-900">{accessInfo.summary.activeUsers24h.toLocaleString()}</span>
-            </div>
+          ) : (
+            <p className="text-sm text-slate-400">No roles assigned</p>
+          )}
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span className="text-xs text-slate-500">{accessInfo.summary.totalUsers.toLocaleString()} users across {accessInfo.summary.totalGroups} groups</span>
+            <Link
+              to={`/agents/${agent.id}/access`}
+              className="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Details <ChevronRightIcon className="w-4 h-4" />
+            </Link>
           </div>
-          <Link
-            to={`/agents/${agent.id}/access`}
-            className="mt-3 inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium"
-          >
-            Manage Access <ChevronRightIcon className="w-4 h-4" />
-          </Link>
         </Card>
       </div>
 
-      {/* Timeline Chart — 3 lines */}
+      {/* Timeline Chart */}
       <Card>
         <CardHeader
           title="Performance Timeline"
-          subtitle="12-month trend across business impact, health, and risk"
+          subtitle={`12-month trend — ${kpiConfig.kpiLabel} and Error Rate`}
           action={
             <Link
               to={`/agents/${agent.id}/behavior`}
@@ -289,14 +294,20 @@ export default function AgentDetail() {
           }
         />
 
-        {/* Q4 Drop alert — varies by agent */}
-        {(isQ4Drop || isKycDrop) && (
+        {/* Performance drop alert for agents with declining KPIs */}
+        {agent.id === 'cs-agent-001' && (
           <div className="mb-4 p-4 bg-warning-light border border-warning rounded-lg">
             <p className="font-medium text-warning-dark">Performance Drop Detected</p>
             <p className="text-sm text-warning-dark/80 mt-1">
-              {isQ4Drop
-                ? 'Resolution rate dropped from 85% to 78% starting in October. This correlates with a new "no snow" topic pattern detected in behavior analysis.'
-                : 'Business impact has declined steadily since Q4. Escalation rate climbed from 8% to 23% over 6 weeks — operational health metrics remain stable, masking the business degradation.'}
+              Resolution rate dropped from 85% to 78% starting in October. This correlates with a new "no snow" topic pattern detected in behavior analysis.
+            </p>
+          </div>
+        )}
+        {agent.id === 'kyc-agent-016' && (
+          <div className="mb-4 p-4 bg-warning-light border border-warning rounded-lg">
+            <p className="font-medium text-warning-dark">Performance Drop Detected</p>
+            <p className="text-sm text-warning-dark/80 mt-1">
+              Escalation rate climbed from 8% to 23% over 6 weeks. The agent is routing a disproportionate number of credit applications to manual review, doubling processing time.
             </p>
           </div>
         )}

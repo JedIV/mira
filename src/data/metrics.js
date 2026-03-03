@@ -206,49 +206,123 @@ export function generateLiveActivityData() {
   return data
 }
 
-// KYC-specific timeline: fixed deterministic data showing the "healthy ops / failing business" story.
-// Business Impact falls from ~83 to ~42 over 6 months while Operational Health stays flat ~90.
-// This is the core demo moment: the agent is technically fine but missing business targets badly.
-export const kycTimelineData = [
-  { month: 'Mar', 'Business Impact': 84.2, 'Operational Health': 91.1, 'Operational Risk': 12.4 },
-  { month: 'Apr', 'Business Impact': 83.5, 'Operational Health': 90.8, 'Operational Risk': 13.1 },
-  { month: 'May', 'Business Impact': 82.8, 'Operational Health': 91.4, 'Operational Risk': 12.7 },
-  { month: 'Jun', 'Business Impact': 83.1, 'Operational Health': 90.6, 'Operational Risk': 13.5 },
-  { month: 'Jul', 'Business Impact': 82.4, 'Operational Health': 91.2, 'Operational Risk': 12.9 },
-  { month: 'Aug', 'Business Impact': 81.9, 'Operational Health': 90.9, 'Operational Risk': 13.8 },
-  // Q4 starts: escalation rate begins climbing, business impact diverges from op health
-  { month: 'Sep', 'Business Impact': 78.3, 'Operational Health': 91.5, 'Operational Risk': 13.2 },
-  { month: 'Oct', 'Business Impact': 70.1, 'Operational Health': 91.8, 'Operational Risk': 12.6 },
-  { month: 'Nov', 'Business Impact': 60.4, 'Operational Health': 90.7, 'Operational Risk': 13.9 },
-  { month: 'Dec', 'Business Impact': 51.2, 'Operational Health': 91.3, 'Operational Risk': 14.1 },
-  { month: 'Jan', 'Business Impact': 45.8, 'Operational Health': 90.5, 'Operational Risk': 13.7 },
-  { month: 'Feb', 'Business Impact': 41.6, 'Operational Health': 91.0, 'Operational Risk': 13.4 },
-]
+// Map of agentId → { kpiKey, kpiLabel, baseValue, unit }
+// Defines what the "primary KPI" is for each curated agent
+const agentKpiConfig = {
+  'cs-agent-001': { kpiLabel: 'Resolution Rate', baseValue: 85.2, unit: '%' },
+  'fraud-agent-002': { kpiLabel: 'Detection Rate', baseValue: 99.2, unit: '%' },
+  'loan-agent-003': { kpiLabel: 'Accuracy Rate', baseValue: 97.8, unit: '%' },
+  'it-support-004': { kpiLabel: 'Resolution Rate', baseValue: 82.3, unit: '%' },
+  'onboarding-005': { kpiLabel: 'Completion Rate', baseValue: 89.2, unit: '%' },
+  'investment-006': { kpiLabel: 'Portfolio Accuracy', baseValue: 94.1, unit: '%' },
+  'compliance-007': { kpiLabel: 'Compliance Rate', baseValue: 99.95, unit: '%' },
+  'marketing-008': { kpiLabel: 'Conversion Rate', baseValue: 3.8, unit: '%' },
+  'collections-009': { kpiLabel: 'Collection Rate', baseValue: 72, unit: '%' },
+  'kyc-agent-016': { kpiLabel: 'Escalation Rate', baseValue: 8, unit: '%' },
+}
 
-// Agent 360 timeline data: 3 normalized series (Business Impact, Op Health, Op Risk)
-export function generateAgentTimelineData(months = 12, q4Drop = false) {
-  if (q4Drop === 'biz-only') return kycTimelineData
+// Domain → default KPI label and typical base value
+const domainKpiDefaults = {
+  'Retail Banking': { kpiLabel: 'Resolution Rate', baseValue: 84 },
+  'Security': { kpiLabel: 'Detection Rate', baseValue: 97 },
+  'Consumer Lending': { kpiLabel: 'Approval Accuracy', baseValue: 93 },
+  'Compliance': { kpiLabel: 'Compliance Rate', baseValue: 98 },
+  'Human Resources': { kpiLabel: 'Resolution Rate', baseValue: 81 },
+  'Finance': { kpiLabel: 'Accuracy Rate', baseValue: 96 },
+  'Sales': { kpiLabel: 'Forecast Accuracy', baseValue: 78 },
+  'Marketing': { kpiLabel: 'Conversion Rate', baseValue: 4.2 },
+  'Legal': { kpiLabel: 'Review Accuracy', baseValue: 95 },
+  'Engineering': { kpiLabel: 'Deploy Success Rate', baseValue: 97 },
+  'Operations': { kpiLabel: 'SLA Compliance', baseValue: 92 },
+  'Facilities': { kpiLabel: 'Request Fulfillment', baseValue: 94 },
+  'Executive': { kpiLabel: 'Report Accuracy', baseValue: 96 },
+  'Infrastructure': { kpiLabel: 'Uptime', baseValue: 99.5 },
+  'Data Platform': { kpiLabel: 'Pipeline Success', baseValue: 96 },
+  'Analytics': { kpiLabel: 'Report Accuracy', baseValue: 95 },
+  'Digital Channels': { kpiLabel: 'Crash-Free Rate', baseValue: 98.5 },
+  'Investment Services': { kpiLabel: 'Portfolio Accuracy', baseValue: 94 },
+  'Payments': { kpiLabel: 'Processing Success', baseValue: 99.1 },
+  'Treasury': { kpiLabel: 'Position Accuracy', baseValue: 98 },
+  'Risk': { kpiLabel: 'Model Accuracy', baseValue: 93 },
+  'Internal Services': { kpiLabel: 'Resolution Rate', baseValue: 82 },
+  'Document Processing': { kpiLabel: 'Extraction Accuracy', baseValue: 97 },
+  'Support': { kpiLabel: 'First-Contact Resolution', baseValue: 72 },
+  'Regulatory': { kpiLabel: 'Filing Accuracy', baseValue: 99 },
+}
 
+import { agentRand } from './prng'
+import { getAgentById } from './agents'
+
+// Get the KPI config for any agent (curated or generated)
+export function getAgentKpiConfig(agentId) {
+  if (agentKpiConfig[agentId]) return agentKpiConfig[agentId]
+  const agent = getAgentById(agentId)
+  if (!agent) return { kpiLabel: 'Performance', baseValue: 85 }
+  const domainDefault = domainKpiDefaults[agent.domain] || { kpiLabel: 'Performance', baseValue: 85 }
+  return { kpiLabel: domainDefault.kpiLabel, baseValue: domainDefault.baseValue }
+}
+
+// Generate 12-month timeline with the agent's actual KPI + Error Rate
+export function generateAgentTimelineData(agentId) {
+  const agent = getAgentById(agentId)
+  const config = getAgentKpiConfig(agentId)
+  const kpiLabel = config.kpiLabel
+  const baseKpi = config.baseValue
+  const baseError = agent ? agent.operationalHealth.errorRate : 0.5
+  const rand = agentRand(agentId + '-timeline')
+
+  // For KYC: escalation rate goes UP (bad), so we invert the story
+  const isKyc = agentId === 'kyc-agent-016'
+  const isCsAgent = agentId === 'cs-agent-001'
+
+  const months = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb']
   const data = []
-  const now = new Date()
 
-  for (let i = months - 1; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    let bizImpact = 82 + (Math.random() - 0.3) * 10
-    let opHealth = 90 + (Math.random() - 0.4) * 8
-    let opRisk = 15 + (Math.random() - 0.5) * 10
+  for (let i = 0; i < 12; i++) {
+    const noise = (rand() - 0.5) * 2
 
-    if (q4Drop && date.getMonth() >= 9) {
-      bizImpact = bizImpact * 0.85
-      opHealth = opHealth * 0.92
-      opRisk = opRisk * 1.6
+    let kpiValue, errorValue
+
+    if (isKyc) {
+      // Escalation rate: starts low (~8%), climbs to 23% in Q4+
+      const baseEsc = 8
+      if (i < 6) {
+        kpiValue = baseEsc + noise * 1.5
+      } else {
+        const progression = (i - 6) / 5
+        kpiValue = baseEsc + progression * 15 + noise * 1.5
+      }
+      errorValue = 0.2 + (rand() - 0.4) * 0.1 // stays flat and low
+    } else if (isCsAgent) {
+      // Resolution rate: starts ~85%, drops to ~78% in Q4
+      if (i < 6) {
+        kpiValue = 85.2 + noise * 1.5
+      } else {
+        const drop = (i - 6) / 5
+        kpiValue = 85.2 - drop * 7 + noise * 1.5
+      }
+      errorValue = 0.3 + (rand() - 0.4) * 0.15
+    } else {
+      // Generic agents: stable with slight variation
+      const isUnhealthy = agent && (agent.businessImpact === 'red' || agent.businessImpact === 'yellow')
+      if (isUnhealthy && i >= 8) {
+        // Late-period dip for yellow/red agents
+        const dip = (i - 8) / 3 * (agent.businessImpact === 'red' ? 8 : 4)
+        kpiValue = baseKpi - dip + noise * 1.5
+      } else {
+        kpiValue = baseKpi + noise * 1.5
+      }
+      errorValue = baseError + (rand() - 0.4) * (baseError * 0.3)
     }
 
+    // Clamp values
+    kpiValue = Math.round(Math.max(0, Math.min(100, kpiValue)) * 10) / 10
+    errorValue = Math.round(Math.max(0, errorValue) * 100) / 100
+
     data.push({
-      month: date.toLocaleDateString('en-US', { month: 'short' }),
-      'Business Impact': Math.round(Math.min(100, Math.max(0, bizImpact)) * 10) / 10,
-      'Operational Health': Math.round(Math.min(100, Math.max(0, opHealth)) * 10) / 10,
-      'Operational Risk': Math.round(Math.min(100, Math.max(0, opRisk)) * 10) / 10,
+      month: months[i],
+      [kpiLabel]: kpiValue,
+      'Error Rate': errorValue,
     })
   }
 

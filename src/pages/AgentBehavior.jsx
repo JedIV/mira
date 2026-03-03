@@ -2,31 +2,31 @@ import { useParams, Link } from 'react-router-dom'
 import { Card, CardHeader, Badge } from '../components/common'
 import { DonutChart } from '../components/charts'
 import { getAgentById } from '../data/agents'
-import { sampleConversations, topicDistributions, topicColors, driftAlerts } from '../data/conversations'
+import { getConversationsByAgent, getTopicDistributions, getDriftAlert, getTopicColor } from '../data/conversations'
 import { formatDateTime } from '../utils/formatters'
 
 export default function AgentBehavior() {
   const { agentId } = useParams()
   const agent = getAgentById(agentId || 'cs-agent-001')
-  const conversations = sampleConversations[agentId] || sampleConversations['cs-agent-001']
-  const agentTopicDistributions = topicDistributions[agentId] || topicDistributions['cs-agent-001'] || {}
+  const conversations = getConversationsByAgent(agentId)
+  const agentTopicDistributions = getTopicDistributions(agentId) || {}
   const q1Topics = agentTopicDistributions['2024-Q1'] || {}
   const q2Topics = agentTopicDistributions['2024-Q2'] || {}
   const q3Topics = agentTopicDistributions['2024-Q3'] || {}
   const q4Topics = agentTopicDistributions['2024-Q4'] || {}
-  const driftAlert = driftAlerts[agentId] || driftAlerts['cs-agent-001']
+  const driftAlert = getDriftAlert(agentId)
 
   // Format topics for chart
   const q3Data = Object.entries(q3Topics).map(([name, value]) => ({
     name: name.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
     value,
-    color: topicColors[name] || '#94A3B8',
+    color: getTopicColor(name),
   }))
 
   const q4Data = Object.entries(q4Topics).map(([name, value]) => ({
     name: name.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
     value,
-    color: topicColors[name] || '#94A3B8',
+    color: getTopicColor(name),
   }))
 
   return (
@@ -44,23 +44,25 @@ export default function AgentBehavior() {
         </div>
       </div>
 
-      {/* Drift Alert */}
-      <div className="bg-danger-light border border-danger rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-danger flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold">!</span>
-          </div>
-          <div>
-            <p className="font-semibold text-danger-dark">Behavior Drift Detected</p>
-            <p className="text-sm text-danger-dark/80 mt-1">
-              {driftAlert.headerText}
-            </p>
-            <p className="text-sm text-danger-dark/70 mt-1">
-              {driftAlert.bodyText}
-            </p>
+      {/* Drift Alert — only shown when drift is detected */}
+      {driftAlert && (
+        <div className="bg-danger-light border border-danger rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-danger flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold">!</span>
+            </div>
+            <div>
+              <p className="font-semibold text-danger-dark">Behavior Drift Detected</p>
+              <p className="text-sm text-danger-dark/80 mt-1">
+                {driftAlert.headerText}
+              </p>
+              <p className="text-sm text-danger-dark/70 mt-1">
+                {driftAlert.bodyText}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Split View: Conversations + Topics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -139,14 +141,16 @@ export default function AgentBehavior() {
           <Card>
             <CardHeader
               title="Topic Distribution - Q4 2024"
-              subtitle="Current quarter showing drift"
+              subtitle={driftAlert ? 'Current quarter showing drift' : 'Current quarter'}
             />
             <DonutChart data={q4Data} height={250} />
-            <div className="mt-4 p-3 bg-danger-light rounded-lg">
-              <p className="text-sm text-danger-dark">
-                <strong>New Topic Alert:</strong> {driftAlert.cardAlert}
-              </p>
-            </div>
+            {driftAlert && (
+              <div className="mt-4 p-3 bg-danger-light rounded-lg">
+                <p className="text-sm text-danger-dark">
+                  <strong>New Topic Alert:</strong> {driftAlert.cardAlert}
+                </p>
+              </div>
+            )}
           </Card>
 
           <Card>
@@ -191,7 +195,7 @@ export default function AgentBehavior() {
                       <div className="flex items-center gap-2">
                         <div
                           className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: topicColors[topic] || '#94A3B8' }}
+                          style={{ backgroundColor: getTopicColor(topic) }}
                         />
                         <span className="font-medium capitalize">
                           {topic.replace(/-/g, ' ')}
