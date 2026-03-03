@@ -5,40 +5,40 @@ export const DISPLAY_TOTAL_AGENTS = 4127
 export const DISPLAY_ACTIVE_AGENTS = 3982
 export const DISPLAY_DEGRADED_AGENTS = 48
 export const DISPLAY_MAINTENANCE_AGENTS = 12
-export const DISPLAY_IMPACT_COUNTS = { green: 3400, yellow: 580, red: 147 }
+export const DISPLAY_IMPACT_COUNTS = { green: 3412, yellow: 574, red: 141 }
 
 // Team-level display counts — scaled to reflect the full 4,127 agent portfolio.
 // Self-service teams (Copilot-sourced) dominate. Alphabetical order matches nav.
 export const displayTeamCounts = {
   'Branch Operations': 28,
-  'Business Intelligence': 30,
+  'Business Intelligence': 31,
   'Collections': 17,
-  'Compliance': 40,
-  'Customer Experience': 52,
+  'Compliance': 42,
+  'Customer Experience': 53,
   'Data Analytics': 44,
-  'Data Engineering': 28,
+  'Data Engineering': 29,
   'Data Governance': 31,
   'Digital Banking': 39,
-  'Financial Reporting': 35,
+  'Financial Reporting': 36,
   'Human Resources': 26,
   'IT Operations': 43,
   'Lending Operations': 47,
   'Marketing': 24,
-  'Operations': 20,
-  'Payments': 45,
+  'Operations': 21,
+  'Payments': 46,
   'Risk Analytics': 38,
-  'Risk Management': 65,
-  'Self-Service — Engineering': 545,
-  'Self-Service — Executive': 145,
-  'Self-Service — Facilities': 170,
-  'Self-Service — Finance': 490,
-  'Self-Service — HR': 460,
-  'Self-Service — Legal': 285,
-  'Self-Service — Marketing': 410,
-  'Self-Service — Operations': 375,
-  'Self-Service — Sales': 520,
-  'Treasury': 35,
-  'Wealth Management': 40,
+  'Risk Management': 67,
+  'Self-Service — Engineering': 541,
+  'Self-Service — Executive': 143,
+  'Self-Service — Facilities': 168,
+  'Self-Service — Finance': 487,
+  'Self-Service — HR': 462,
+  'Self-Service — Legal': 283,
+  'Self-Service — Marketing': 412,
+  'Self-Service — Operations': 373,
+  'Self-Service — Sales': 523,
+  'Treasury': 36,
+  'Wealth Management': 42,
 }
 
 // Hand-crafted primary agents (these appear in demos)
@@ -699,42 +699,42 @@ export const platformSources = [
     name: 'Microsoft Copilot',
     color: '#00A4EF',
     // Display count reflects full enterprise scale (self-service Copilot agents dominate)
-    agentCount: 3400,
+    agentCount: 3402,
     description: 'Microsoft AI assistant'
   },
   {
     id: 'bedrock',
     name: 'AWS Bedrock',
     color: '#FF9900',
-    agentCount: 180,
+    agentCount: 183,
     description: 'Amazon foundation models'
   },
   {
     id: 'snowflake',
     name: 'Snowflake Cortex',
     color: '#29B5E8',
-    agentCount: 230,
+    agentCount: 227,
     description: 'Snowflake AI agents'
   },
   {
     id: 'langchain',
     name: 'LangChain',
     color: '#1C3C3C',
-    agentCount: 120,
+    agentCount: 118,
     description: 'LLM framework agents'
   },
   {
     id: 'servicenow',
     name: 'ServiceNow',
     color: '#81B5A1',
-    agentCount: 95,
+    agentCount: 94,
     description: 'IT workflow automation'
   },
   {
     id: 'n8n',
     name: 'n8n',
     color: '#EA4B71',
-    agentCount: 55,
+    agentCount: 56,
     description: 'Workflow automation'
   },
   {
