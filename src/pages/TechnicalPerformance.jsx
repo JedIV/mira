@@ -1,13 +1,21 @@
 import { Link } from 'react-router-dom'
-import { Card, CardHeader, StatusBadge, MetricCard } from '../components/common'
+import { Card, CardHeader, StatusBadge, MetricCard, SummaryCards } from '../components/common'
 import { AreaChart, LineChart } from '../components/charts'
 import { generateLiveActivityData, criticalAgents, generateTimeSeriesData } from '../data/metrics'
+import { DISPLAY_STATUS_COUNTS } from '../data/agents'
 import { formatPercent, formatNumber } from '../utils/formatters'
 import { ServerStackIcon, ClockIcon, ExclamationTriangleIcon } from '../components/navigation/Icons'
 
 const activityData = generateLiveActivityData()
 const responseTimeData = generateTimeSeriesData(12, 1.5, 0.15)
 const errorRateData = generateTimeSeriesData(12, 0.5, 0.3)
+
+const statusItems = [
+  { key: 'healthy', label: 'Healthy', subtitle: 'Operating normally', cardClass: 'bg-emerald-50 border-emerald-200', textClass: 'text-emerald-700', dotClass: 'bg-emerald-500', count: DISPLAY_STATUS_COUNTS.healthy, linkTo: '/inventory?status=active' },
+  { key: 'degraded', label: 'Degraded', subtitle: 'Performance issues', cardClass: 'bg-amber-50 border-amber-200', textClass: 'text-amber-700', dotClass: 'bg-amber-500', count: DISPLAY_STATUS_COUNTS.degraded, linkTo: '/inventory?status=degraded' },
+  { key: 'offline', label: 'Offline', subtitle: 'Unreachable', cardClass: 'bg-red-50 border-red-200', textClass: 'text-red-700', dotClass: 'bg-red-500', count: DISPLAY_STATUS_COUNTS.offline, linkTo: '/inventory?status=offline' },
+  { key: 'maintenance', label: 'Maintenance', subtitle: 'Scheduled downtime', cardClass: 'bg-slate-50 border-slate-200', textClass: 'text-slate-500', dotClass: 'bg-slate-400', count: DISPLAY_STATUS_COUNTS.maintenance, linkTo: '/inventory?status=maintenance' },
+]
 
 export default function TechnicalPerformance() {
   return (
@@ -19,6 +27,8 @@ export default function TechnicalPerformance() {
           System uptime, response times, and error rates across all agents
         </p>
       </div>
+
+      <SummaryCards items={statusItems} />
 
       {/* Summary Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -46,7 +56,7 @@ export default function TechnicalPerformance() {
         />
         <MetricCard
           label="Requests/min"
-          value={formatNumber(58200)}
+          value="156"
           trend="up"
           trendValue={12.5}
         />
@@ -73,11 +83,11 @@ export default function TechnicalPerformance() {
             </div>
             <div>
               <p className="text-xs text-slate-500">Peak Volume</p>
-              <p className="text-lg font-semibold text-slate-900">51,200</p>
+              <p className="text-lg font-semibold text-slate-900">9,847</p>
             </div>
             <div>
               <p className="text-xs text-slate-500">Total Today</p>
-              <p className="text-lg font-semibold text-slate-900">854K</p>
+              <p className="text-lg font-semibold text-slate-900">74.3K</p>
             </div>
           </div>
         </Card>
@@ -142,29 +152,6 @@ export default function TechnicalPerformance() {
           />
         </Card>
       </div>
-
-      {/* Status Summary */}
-      <Card>
-        <CardHeader title="System Health Summary" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div className="text-center p-4 bg-success-light rounded-lg">
-            <p className="text-3xl font-bold text-success-dark">47</p>
-            <p className="text-sm text-success-dark">Healthy</p>
-          </div>
-          <div className="text-center p-4 bg-warning-light rounded-lg">
-            <p className="text-3xl font-bold text-warning-dark">2</p>
-            <p className="text-sm text-warning-dark">Degraded</p>
-          </div>
-          <div className="text-center p-4 bg-slate-100 rounded-lg">
-            <p className="text-3xl font-bold text-slate-700">1</p>
-            <p className="text-sm text-slate-600">Maintenance</p>
-          </div>
-          <div className="text-center p-4 bg-danger-light rounded-lg">
-            <p className="text-3xl font-bold text-danger-dark">0</p>
-            <p className="text-sm text-danger-dark">Offline</p>
-          </div>
-        </div>
-      </Card>
     </div>
   )
 }

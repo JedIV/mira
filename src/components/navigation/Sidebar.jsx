@@ -4,7 +4,8 @@ import {
   ListBulletIcon,
   CurrencyDollarIcon,
   HeartPulseIcon,
-  AlertTriangleIcon,
+  ChartBarIcon,
+  ShieldCheckIcon,
   Cog6ToothIcon,
   HomeIcon,
 } from './Icons'
@@ -14,9 +15,10 @@ import avatarImg from '../../assets/avatar.jpg'
 const navigation = [
   { name: 'Overview', href: '/', icon: HomeIcon, end: true },
   { name: 'Inventory', href: '/inventory', icon: ListBulletIcon },
+  { name: 'Operational Health', href: '/performance/technical', icon: HeartPulseIcon },
   { name: 'Business Impact', href: '/performance/business', icon: CurrencyDollarIcon },
-  { name: 'Health', href: '/performance/technical', icon: HeartPulseIcon },
-  { name: 'Risk', href: '/governance', icon: AlertTriangleIcon },
+  { name: 'Behavior', href: '/behavior/trends', icon: ChartBarIcon },
+  { name: 'Governance', href: '/governance', icon: ShieldCheckIcon },
 ]
 
 function UserMenu() {
@@ -79,11 +81,32 @@ export default function Sidebar() {
       {/* Navigation Icons */}
       <nav className="flex-1 flex flex-col items-center gap-1">
         {navigation.map((item) => (
+          <div key={item.name} className="relative group">
+            <NavLink
+              to={item.href}
+              end={item.end}
+              className={({ isActive }) =>
+                `w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-150 ${
+                  isActive
+                    ? 'bg-primary-500/20 text-primary-300'
+                    : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.06]'
+                }`
+              }
+            >
+              <item.icon className="w-5 h-5" />
+            </NavLink>
+            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 text-white text-xs font-medium rounded-md whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 shadow-lg border border-white/10 z-50">
+              {item.name}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      {/* Bottom: Settings + User */}
+      <div className="flex flex-col items-center gap-2 mt-auto">
+        <div className="relative group">
           <NavLink
-            key={item.name}
-            to={item.href}
-            end={item.end}
-            title={item.name}
+            to="/settings"
             className={({ isActive }) =>
               `w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-150 ${
                 isActive
@@ -92,26 +115,12 @@ export default function Sidebar() {
               }`
             }
           >
-            <item.icon className="w-5 h-5" />
+            <Cog6ToothIcon className="w-5 h-5" />
           </NavLink>
-        ))}
-      </nav>
-
-      {/* Bottom: Settings + User */}
-      <div className="flex flex-col items-center gap-2 mt-auto">
-        <NavLink
-          to="/settings"
-          title="Settings"
-          className={({ isActive }) =>
-            `w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-150 ${
-              isActive
-                ? 'bg-primary-500/20 text-primary-300'
-                : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.06]'
-            }`
-          }
-        >
-          <Cog6ToothIcon className="w-5 h-5" />
-        </NavLink>
+          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 text-white text-xs font-medium rounded-md whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 shadow-lg border border-white/10 z-50">
+            Settings
+          </div>
+        </div>
         <UserMenu />
       </div>
     </aside>

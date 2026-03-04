@@ -185,14 +185,14 @@ export function generateLiveActivityData() {
     const hour = new Date(now.getTime() - i * 60 * 60 * 1000)
     const hourNum = hour.getHours()
 
-    // Simulate business hours pattern
-    let baseActivity = 500
+    // Simulate business hours pattern (~75K requests/day from 10K users)
+    let baseActivity = 200
     if (hourNum >= 9 && hourNum <= 17) {
-      baseActivity = 2000 + Math.random() * 500
+      baseActivity = 7500 + Math.random() * 2500
     } else if (hourNum >= 6 && hourNum <= 21) {
-      baseActivity = 800 + Math.random() * 300
+      baseActivity = 2000 + Math.random() * 800
     } else {
-      baseActivity = 200 + Math.random() * 100
+      baseActivity = 200 + Math.random() * 150
     }
 
     data.push({
@@ -262,71 +262,105 @@ export function getAgentKpiConfig(agentId) {
   return { kpiLabel: domainDefault.kpiLabel, baseValue: domainDefault.baseValue }
 }
 
-// Generate 12-month timeline with the agent's actual KPI + Error Rate
-export function generateAgentTimelineData(agentId) {
+// Generate weekly labels for 6 months (~26 weeks)
+function weekLabels() {
+  const labels = []
+  const now = new Date()
+  for (let i = 25; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000)
+    labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
+  }
+  return labels
+}
+
+// Generate weekly business KPI timeline data
+export function generateBusinessTimelineData(agentId) {
   const agent = getAgentById(agentId)
   const config = getAgentKpiConfig(agentId)
   const kpiLabel = config.kpiLabel
   const baseKpi = config.baseValue
-  const baseError = agent ? agent.operationalHealth.errorRate : 0.5
-  const rand = agentRand(agentId + '-timeline')
+  const rand = agentRand(agentId + '-biz-timeline')
+  const weeks = weekLabels()
 
-  // For KYC: escalation rate goes UP (bad), so we invert the story
   const isKyc = agentId === 'kyc-agent-016'
   const isCsAgent = agentId === 'cs-agent-001'
 
-  const months = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb']
-  const data = []
-
-  for (let i = 0; i < 12; i++) {
-    const noise = (rand() - 0.5) * 2
-
-    let kpiValue, errorValue
+  return weeks.map((week, i) => {
+    const noise = (rand() - 0.5) * 3
+    let kpiValue
 
     if (isKyc) {
-      // Escalation rate: starts low (~8%), climbs to 23% in Q4+
+      // Escalation rate: stable ~8% for first 12 weeks, climbs to max 23% by final week
       const baseEsc = 8
-      if (i < 6) {
-        kpiValue = baseEsc + noise * 1.5
+      const maxEsc = 23
+      if (i < 12) {
+        kpiValue = baseEsc + noise * 1.2
       } else {
-        const progression = (i - 6) / 5
-        kpiValue = baseEsc + progression * 15 + noise * 1.5
+        const progression = (i - 12) / 13
+        const target = baseEsc + progression * (maxEsc - baseEsc)
+        kpiValue = Math.min(maxEsc, target + noise * 1.5)
       }
-      errorValue = 0.2 + (rand() - 0.4) * 0.1 // stays flat and low
     } else if (isCsAgent) {
-      // Resolution rate: starts ~85%, drops to ~78% in Q4
-      if (i < 6) {
-        kpiValue = 85.2 + noise * 1.5
+      // Resolution rate: stable ~85%, drops from mid-period onward
+      if (i < 12) {
+        kpiValue = 85.2 + noise * 1.8
       } else {
-        const drop = (i - 6) / 5
-        kpiValue = 85.2 - drop * 7 + noise * 1.5
+        const drop = (i - 12) / 13
+        kpiValue = 85.2 - drop * 7 + noise * 2
       }
-      errorValue = 0.3 + (rand() - 0.4) * 0.15
     } else {
-      // Generic agents: stable with slight variation
       const isUnhealthy = agent && (agent.businessImpact === 'red' || agent.businessImpact === 'yellow')
-      if (isUnhealthy && i >= 8) {
-        // Late-period dip for yellow/red agents
-        const dip = (i - 8) / 3 * (agent.businessImpact === 'red' ? 8 : 4)
+      if (isUnhealthy && i >= 18) {
+        const dip = (i - 18) / 7 * (agent.businessImpact === 'red' ? 8 : 4)
         kpiValue = baseKpi - dip + noise * 1.5
       } else {
         kpiValue = baseKpi + noise * 1.5
       }
-      errorValue = baseError + (rand() - 0.4) * (baseError * 0.3)
     }
 
-    // Clamp values
     kpiValue = Math.round(Math.max(0, Math.min(100, kpiValue)) * 10) / 10
-    errorValue = Math.round(Math.max(0, errorValue) * 100) / 100
+    return { week, [kpiLabel]: kpiValue }
+  })
+}
 
-    data.push({
-      month: months[i],
-      [kpiLabel]: kpiValue,
-      'Error Rate': errorValue,
-    })
+// Generate 90-day uptime status data (status bar like status.claude.com)
+// Each day: { date, label, status: 'operational'|'degraded'|'minor'|'major', uptimePercent }
+export function generateUptimeData(agentId) {
+  const agent = getAgentById(agentId)
+  const rand = agentRand(agentId + '-uptime')
+  const isDegraded = agent && agent.status === 'degraded'
+  const baseUptime = agent ? (agent.operationalHealth.errorRate > 1.5 ? 0.96 : 0.998) : 0.998
+  const days = []
+
+  for (let i = 89; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
+    const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const r = rand()
+
+    let status = 'operational'
+    let uptimePercent = 100
+
+    // Degraded agents get more incidents
+    const incidentChance = isDegraded ? 0.12 : 0.04
+
+    if (r < incidentChance * 0.15) {
+      status = 'major'
+      uptimePercent = Math.round((85 + rand() * 10) * 10) / 10
+    } else if (r < incidentChance * 0.5) {
+      status = 'degraded'
+      uptimePercent = Math.round((95 + rand() * 4) * 10) / 10
+    } else if (r < incidentChance) {
+      status = 'minor'
+      uptimePercent = Math.round((98 + rand() * 1.8) * 10) / 10
+    }
+
+    days.push({ date: d.toISOString().slice(0, 10), label, status, uptimePercent })
   }
 
-  return data
+  // Compute overall uptime across 90 days
+  const avgUptime = Math.round(days.reduce((sum, d) => sum + d.uptimePercent, 0) / days.length * 100) / 100
+
+  return { days, avgUptime }
 }
 
 // Critical agents with their status
@@ -335,5 +369,5 @@ export const criticalAgents = [
   { id: 'kyc-agent-016', name: 'KYC Verification', uptime: 99.9, responseTime: 1.1, errorRate: 0.2, status: 'healthy' },
   { id: 'cs-agent-001', name: 'Customer Service', uptime: 99.7, responseTime: 1.2, errorRate: 0.3, status: 'healthy' },
   { id: 'compliance-007', name: 'Compliance Monitor', uptime: 99.95, responseTime: 0.8, errorRate: 0.05, status: 'healthy' },
-  { id: 'loan-agent-003', name: 'Loan Processing', uptime: 99.5, responseTime: 4.5, errorRate: 0.8, status: 'warning' },
+  { id: 'loan-agent-003', name: 'Loan Processing', uptime: 99.5, responseTime: 4.5, errorRate: 0.8, status: 'degraded' },
 ]

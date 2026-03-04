@@ -1,11 +1,11 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Card, CardHeader, StatusBadge, Badge, BusinessImpactBadge } from '../components/common'
+import { Card, CardHeader, StatusBadge, BusinessImpactBadge } from '../components/common'
 import { MultiLineChart } from '../components/charts'
 import { getAgentById, platformSources } from '../data/agents'
+import { agentRand } from '../data/prng'
 import { getAgentPlatformUrl } from '../data/platforms'
-import { generateAgentTimelineData, getAgentKpiConfig, businessMetrics } from '../data/metrics'
-import { getAccessByAgentId } from '../data/access'
-import { getRolesForAgent } from '../data/roles'
+import { generateBusinessTimelineData, generateUptimeData, getAgentKpiConfig, businessMetrics } from '../data/metrics'
 import { formatPercent } from '../utils/formatters'
 import PlatformLogo from '../components/PlatformLogo'
 import {
@@ -35,6 +35,81 @@ function formatBusinessMetric(key, value) {
   return `${value}%`
 }
 
+const statusColors = {
+  operational: '#4ade80',
+  minor: '#fbbf24',
+  degraded: '#fb923c',
+  major: '#ef4444',
+}
+
+function UptimeBar({ days }) {
+  const [tooltip, setTooltip] = useState(null)
+  const count = days.length
+  const barW = 10
+  const gap = 1.5
+  const totalW = count * barW + (count - 1) * gap
+  const h = 36
+
+  return (
+    <div className="relative">
+      <svg viewBox={`0 0 ${totalW} ${h}`} preserveAspectRatio="none" className="w-full" style={{ height: 40 }}>
+        {days.map((day, i) => (
+          <rect
+            key={day.date}
+            x={i * (barW + gap)}
+            y={0}
+            width={barW}
+            height={h}
+            rx={1.5}
+            fill={statusColors[day.status]}
+            onMouseEnter={(e) => {
+              const r = e.currentTarget.getBoundingClientRect()
+              setTooltip({ day, x: r.left + r.width / 2, y: r.top })
+            }}
+            onMouseLeave={() => setTooltip(null)}
+          />
+        ))}
+      </svg>
+      {tooltip && (
+        <div
+          className="fixed px-2 py-1 bg-slate-800 text-white text-xs rounded whitespace-nowrap pointer-events-none z-50"
+          style={{ left: tooltip.x, top: tooltip.y - 8, transform: 'translate(-50%, -100%)' }}
+        >
+          <p className="font-medium">{tooltip.day.label}</p>
+          <p>{tooltip.day.uptimePercent}% uptime</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RequestReviewButton({ variant }) {
+  const [requested, setRequested] = useState(false)
+
+  const handleClick = () => {
+    setRequested(true)
+    setTimeout(() => setRequested(false), 2000)
+  }
+
+  if (requested) {
+    return (
+      <button className="btn-secondary text-xs w-full mt-3 bg-emerald-50 text-emerald-700 border-emerald-200 cursor-default" disabled>
+        <svg className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+        Review Requested
+      </button>
+    )
+  }
+
+  return (
+    <button
+      className={`${variant === 'red' ? 'btn-primary' : 'btn-secondary'} text-xs w-full mt-3`}
+      onClick={handleClick}
+    >
+      Request Review
+    </button>
+  )
+}
+
 export default function AgentDetail() {
   const { agentId } = useParams()
   const agent = getAgentById(agentId)
@@ -43,14 +118,14 @@ export default function AgentDetail() {
     return <div className="text-center py-12 text-slate-500">Agent not found</div>
   }
 
-  const accessInfo = getAccessByAgentId(agentId)
-  const roleEntries = getRolesForAgent(agentId)
   const source = platformSources.find(s => s.id === agent.source)
   const kpiConfig = getAgentKpiConfig(agent.id)
-  const timelineData = generateAgentTimelineData(agent.id)
-  const timelineLines = [
-    { dataKey: kpiConfig.kpiLabel, name: kpiConfig.kpiLabel, color: '#2AB1AC' },
-    { dataKey: 'Error Rate', name: 'Error Rate', color: '#EF4444' },
+  const bizTimelineData = generateBusinessTimelineData(agent.id)
+  const uptimeData = generateUptimeData(agent.id)
+  // Red + thicker line for agents with degrading KPIs
+  const isKpiDegrading = agent.businessImpact === 'red' || agent.businessImpact === 'yellow'
+  const bizLines = [
+    { dataKey: kpiConfig.kpiLabel, name: kpiConfig.kpiLabel, color: isKpiDegrading ? '#EF4444' : '#2AB1AC', strokeWidth: isKpiDegrading ? 3 : 2 },
   ]
   const agentBusinessMetrics = businessMetrics[agent.id] || {}
   const primaryMetricKey = Object.keys(primaryMetricLabels).find((key) => key in agentBusinessMetrics)
@@ -70,6 +145,26 @@ export default function AgentDetail() {
     red: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500' },
   }
   const impact = impactColors[agent.businessImpact] || impactColors.green
+
+  // Operational health extras
+  const healthRand = agentRand(agent.id + '-health')
+  const uptime = agent.operationalHealth.errorRate > 1 ? (97 + healthRand() * 2).toFixed(1) : (99 + healthRand() * 0.9).toFixed(1)
+  const hasIncident = agent.status === 'degraded' || agent.businessImpact === 'red' || agent.operationalHealth.errorRate > 1.5
+  const incidentDaysAgo = hasIncident ? Math.round(1 + healthRand() * 14) : null
+  const lastIncident = incidentDaysAgo ? `${incidentDaysAgo}d ago` : 'None'
+
+  const usageRand = agentRand(agent.id + '-usage')
+  const monthly = Math.round(50 + usageRand() * 450)
+  const weekly = Math.round(monthly * (0.4 + usageRand() * 0.2))
+  const daily = Math.round(weekly * (0.3 + usageRand() * 0.2))
+  const usageStats = {
+    daily,
+    weekly,
+    monthly,
+    dailyChange: Math.round((usageRand() - 0.4) * 30),
+    weeklyChange: Math.round((usageRand() - 0.4) * 20),
+    monthlyChange: Math.round((usageRand() - 0.3) * 15),
+  }
 
   const trendIcon = (trend) => {
     if (trend === 'up') return <ArrowUpIcon className="w-3 h-3 text-danger" />
@@ -176,8 +271,8 @@ export default function AgentDetail() {
         </Card>
       )}
 
-      {/* Metric Cards: Business KPI Status, Operational Health, Operational Risks, User Access */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Metric Cards: Business KPI Status, Operational Health, User Access */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Business KPI Status */}
         <Card>
           <CardHeader title="Business KPI Status" />
@@ -194,6 +289,9 @@ export default function AgentDetail() {
             <p className="text-lg font-semibold text-slate-900">{primaryMetric.value}</p>
           </div>
           <p className="text-xs text-slate-500 mt-2">{agent.businessImpactLabel}</p>
+          {(agent.businessImpact === 'yellow' || agent.businessImpact === 'red') && (
+            <RequestReviewButton variant={agent.businessImpact} />
+          )}
         </Card>
 
         {/* Operational Health */}
@@ -201,7 +299,11 @@ export default function AgentDetail() {
           <CardHeader title="Operational Health" />
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-500">Agent Response</span>
+              <span className="text-sm text-slate-500">Uptime</span>
+              <span className={`text-lg font-semibold ${parseFloat(uptime) >= 99.5 ? 'text-emerald-600' : 'text-amber-600'}`}>{uptime}%</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-500">Avg Response</span>
               <div className="flex items-center gap-2">
                 <span className="text-lg font-semibold text-slate-900">
                   {formatResponseTime(agent.operationalHealth.responseTime)}
@@ -218,72 +320,73 @@ export default function AgentDetail() {
                 {trendIcon(agent.operationalHealth.errorRateTrend)}
               </div>
             </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-slate-500">Last Incident</span>
+              <span className={`text-lg font-semibold ${lastIncident === 'None' ? 'text-emerald-600' : 'text-amber-600'}`}>{lastIncident}</span>
+            </div>
           </div>
         </Card>
 
-        {/* Operational Risks */}
+        {/* Usage Stats */}
         <Card>
-          <CardHeader title="Operational Risks" />
+          <CardHeader title="Usage Stats" />
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-500">Security Warnings</span>
-              <span className={`text-lg font-semibold ${
-                agent.operationalRisks.securityWarnings > 0 ? 'text-amber-600' : 'text-slate-900'
-              }`}>
-                {agent.operationalRisks.securityWarnings}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-slate-500">Data Exposure</span>
-              <span className={`text-lg font-semibold ${
-                agent.operationalRisks.dataExposure > 0 ? 'text-red-600' : 'text-slate-900'
-              }`}>
-                {agent.operationalRisks.dataExposure > 0 ? `${agent.operationalRisks.dataExposure} event${agent.operationalRisks.dataExposure > 1 ? 's' : ''}` : '0'}
-              </span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Access Roles */}
-        <Card>
-          <CardHeader title="Access Roles" />
-          {roleEntries.length > 0 ? (
-            <div className="space-y-2.5">
-              {roleEntries.map(({ role, permissionLevel }) => (
-                <div key={role.id} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: role.color }} />
-                    <span className="text-sm font-medium text-slate-900">{role.name}</span>
-                  </div>
-                  <Badge
-                    variant={permissionLevel === 'admin' ? 'warning' : permissionLevel === 'execute' ? 'primary' : 'secondary'}
-                    size="sm"
-                  >
-                    {permissionLevel.charAt(0).toUpperCase() + permissionLevel.slice(1)}
-                  </Badge>
+            {[
+              { label: 'Daily Active', value: usageStats.daily, change: usageStats.dailyChange },
+              { label: 'Weekly Active', value: usageStats.weekly, change: usageStats.weeklyChange },
+              { label: 'Monthly Active', value: usageStats.monthly, change: usageStats.monthlyChange },
+            ].map(({ label, value, change }) => (
+              <div key={label} className="flex items-center justify-between">
+                <span className="text-sm text-slate-500">{label}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold text-slate-900">{value.toLocaleString()}</span>
+                  <span className={`text-xs font-medium ${change >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                    {change >= 0 ? '+' : ''}{change}%
+                  </span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-slate-400">No roles assigned</p>
-          )}
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-xs text-slate-500">{accessInfo.summary.totalUsers.toLocaleString()} users across {accessInfo.summary.totalGroups} groups</span>
-            <Link
-              to={`/agents/${agent.id}/access`}
-              className="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium"
-            >
-              Details <ChevronRightIcon className="w-4 h-4" />
-            </Link>
+              </div>
+            ))}
           </div>
         </Card>
       </div>
 
-      {/* Timeline Chart */}
+      {/* Uptime Status Bar */}
+      <Card>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-base font-semibold text-slate-900">Operational Performance</h3>
+            <p className="text-xs text-slate-500 mt-0.5">90-day uptime history</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-slate-900">{uptimeData.avgUptime}%</p>
+            <p className="text-xs text-slate-500">overall uptime</p>
+          </div>
+        </div>
+        <UptimeBar days={uptimeData.days} />
+        <div className="flex items-center justify-between mt-2 text-xs text-slate-400">
+          <span>{uptimeData.days[0]?.label}</span>
+          <span>Today</span>
+        </div>
+        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-4 justify-center">
+          {[
+            { label: 'Operational', className: 'bg-emerald-400' },
+            { label: 'Minor Issue', className: 'bg-amber-400' },
+            { label: 'Degraded', className: 'bg-orange-400' },
+            { label: 'Major Outage', className: 'bg-red-500' },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center gap-1.5 text-xs text-slate-500">
+              <div className={`w-2.5 h-2.5 rounded-sm ${item.className}`} />
+              {item.label}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Business Performance Chart */}
       <Card>
         <CardHeader
-          title="Performance Timeline"
-          subtitle={`12-month trend — ${kpiConfig.kpiLabel} and Error Rate`}
+          title="Business Performance"
+          subtitle={`${kpiConfig.kpiLabel} — weekly over 6 months`}
           action={
             <Link
               to={`/agents/${agent.id}/behavior`}
@@ -304,29 +407,20 @@ export default function AgentDetail() {
           </div>
         )}
         {agent.id === 'kyc-agent-016' && (
-          <div className="mb-4 p-4 bg-warning-light border border-warning rounded-lg">
-            <p className="font-medium text-warning-dark">Performance Drop Detected</p>
-            <p className="text-sm text-warning-dark/80 mt-1">
-              Escalation rate climbed from 8% to 23% over 6 weeks. The agent is routing a disproportionate number of credit applications to manual review, doubling processing time.
+          <div className="mb-4 p-4 bg-red-50 border border-red-300 rounded-lg">
+            <p className="font-medium text-red-700">KPI Degradation Detected</p>
+            <p className="text-sm text-red-600/80 mt-1">
+              Escalation rate climbed from 8% to 23% since September. The agent is routing a disproportionate number of credit applications to manual review, doubling processing time.
             </p>
           </div>
         )}
 
         <MultiLineChart
-          data={timelineData}
-          lines={timelineLines}
-          height={300}
+          data={bizTimelineData}
+          lines={bizLines}
+          xAxisKey="week"
+          height={280}
         />
-
-        {/* Legend */}
-        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-6 justify-center">
-          {timelineLines.map((line) => (
-            <div key={line.dataKey} className="flex items-center gap-2 text-xs text-slate-500">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: line.color }} />
-              {line.name}
-            </div>
-          ))}
-        </div>
       </Card>
 
       {/* Agent Information */}

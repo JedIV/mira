@@ -16,6 +16,11 @@ const impactConfig = {
     variant: 'danger',
     dotClass: 'bg-red-500',
   },
+  gray: {
+    label: 'No KPIs',
+    variant: 'secondary',
+    dotClass: 'bg-slate-400',
+  },
 }
 
 export default function BusinessImpactBadge({ impact, showLabel = true, className = '' }) {

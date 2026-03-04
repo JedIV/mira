@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Card, StatusBadge, Badge, BusinessImpactBadge } from '../components/common'
-import { agents, platformSources } from '../data/agents'
+import { agents, platformSources, DISPLAY_TOTAL_AGENTS } from '../data/agents'
 import { formatRelativeTime } from '../utils/formatters'
 import { MagnifyingGlassIcon, DocumentTextIcon } from '../components/navigation/Icons'
 import PlatformLogo from '../components/PlatformLogo'
 import { roles, roleCoversAgent } from '../data/roles'
 
 const statuses = ['all', 'active', 'degraded', 'maintenance', 'offline']
-const impacts = ['all', 'green', 'yellow', 'red']
-const impactLabels = { green: 'On Track', yellow: 'Needs Attention', red: 'Critical' }
+const impacts = ['all', 'green', 'yellow', 'red', 'gray']
+const impactLabels = { green: 'On Track', yellow: 'Needs Attention', red: 'Critical', gray: 'No KPIs' }
 
 function RoleMultiSelect({ selected, onChange }) {
   const [open, setOpen] = useState(false)
@@ -92,6 +92,7 @@ export default function AgentInventory() {
   const [impactFilter, setImpactFilter] = useState(searchParams.get('impact') || 'all')
   const [roleFilter, setRoleFilter] = useState([])
   const [sourceFilter, setSourceFilter] = useState(searchParams.get('platform') || 'all')
+  const [visibleCount, setVisibleCount] = useState(100)
 
   const filteredAgents = agents.filter(agent => {
     const matchesSearch = agent.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -174,12 +175,12 @@ export default function AgentInventory() {
 
       {/* Results Count */}
       <p className="text-sm text-slate-500 mb-4">
-        Showing {filteredAgents.length} of {agents.length} agents
+        Showing {Math.min(filteredAgents.length, visibleCount)} of {DISPLAY_TOTAL_AGENTS.toLocaleString()} agents
       </p>
 
       {/* Agent Cards */}
       <div className="space-y-3">
-        {filteredAgents.map((agent) => (
+        {filteredAgents.slice(0, visibleCount).map((agent) => (
           <Card key={agent.id} hover className="transition-all duration-200 hover:-translate-y-0.5">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-4">
@@ -227,6 +228,18 @@ export default function AgentInventory() {
           </Card>
         ))}
       </div>
+
+      {/* Load More */}
+      {visibleCount < filteredAgents.length && (
+        <div className="text-center mt-6">
+          <button
+            onClick={() => setVisibleCount(prev => prev + 100)}
+            className="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors"
+          >
+            Load More
+          </button>
+        </div>
+      )}
     </div>
   )
 }

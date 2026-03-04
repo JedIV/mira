@@ -1,13 +1,14 @@
 // ─── Display override constants for 4,000+ scale narrative ──────────────────
-// ABC Bank has 4,127 agents total — most from self-service Copilot usage
+// ABC Bank has 2,426 agents total — mix of self-service Copilot and platform agents
 // We keep the actual agent records small; these constants drive summary displays
-export const DISPLAY_TOTAL_AGENTS = 4127
-export const DISPLAY_ACTIVE_AGENTS = 3982
+export const DISPLAY_TOTAL_AGENTS = 2426
+export const DISPLAY_ACTIVE_AGENTS = 2281
 export const DISPLAY_DEGRADED_AGENTS = 51
 export const DISPLAY_MAINTENANCE_AGENTS = 14
-export const DISPLAY_IMPACT_COUNTS = { green: 3412, yellow: 574, red: 141 }
+export const DISPLAY_STATUS_COUNTS = { healthy: 2361, degraded: 51, maintenance: 14, offline: 0 }
+export const DISPLAY_IMPACT_COUNTS = { green: 1711, yellow: 574, red: 23, missing: 118 }
 
-// Team-level display counts — scaled to reflect the full 4,127 agent portfolio.
+// Team-level display counts — scaled to reflect the full 2,426 agent portfolio.
 // Self-service teams (Copilot-sourced) dominate. Alphabetical order matches nav.
 export const displayTeamCounts = {
   'Branch Operations': 28,
@@ -631,7 +632,7 @@ function generateAgent(template, nameEntry, index) {
   const [name, description] = nameEntry
   const id = `gen-${template.team.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${String(index).padStart(3, '0')}`
   const statuses = ['active', 'active', 'active', 'active', 'active', 'active', 'active', 'active', 'degraded', 'maintenance']
-  const impacts = ['green', 'green', 'green', 'green', 'green', 'green', 'yellow', 'yellow', 'red']
+  const impacts = ['green', 'green', 'green', 'green', 'green', 'yellow', 'yellow', 'red', 'gray']
   const trends = ['stable', 'stable', 'stable', 'up', 'down']
 
   const status = statuses[Math.floor(rand() * statuses.length)]
@@ -649,13 +650,14 @@ function generateAgent(template, nameEntry, index) {
   const lastActive = new Date(Date.now() - lastActiveHours * 3600000)
 
   const impactLabels = {
-    green: ['Operating within targets', 'All metrics nominal', 'Performance exceeding expectations', 'Steady state operations'],
-    yellow: ['Monitoring for improvement', 'Minor performance dip noted', 'Approaching threshold limits', 'Under review for optimization'],
-    red: ['Requires immediate attention', 'Performance below threshold', 'Significant degradation detected', 'Critical — action needed'],
+    green: 'Operating within targets',
+    yellow: 'Under review',
+    red: 'Requires attention',
+    gray: 'No KPIs configured',
   }
 
-  const businessImpactLabel = impactLabels[businessImpact][Math.floor(rand() * impactLabels[businessImpact].length)]
-  const aiInsight = `${name} is ${status === 'active' ? 'operational' : status} with ${responseTime}ms average response time and ${errorRate}% error rate. ${businessImpact === 'green' ? 'No significant issues detected.' : businessImpact === 'yellow' ? 'Minor issues noted — recommend monitoring.' : 'Critical issues require immediate investigation.'}`
+  const businessImpactLabel = impactLabels[businessImpact]
+  const aiInsight = `${name} is ${status === 'active' ? 'operational' : status} with ${responseTime}ms average response time and ${errorRate}% error rate. ${businessImpact === 'green' ? 'No significant issues detected.' : businessImpact === 'yellow' ? 'Minor issues noted — recommend monitoring.' : businessImpact === 'gray' ? 'No business KPIs have been configured for this agent.' : 'Critical issues require immediate investigation.'}`
 
   return {
     id,
@@ -699,7 +701,7 @@ export const platformSources = [
     name: 'Microsoft Copilot',
     color: '#00A4EF',
     // Display count reflects full enterprise scale (self-service Copilot agents dominate)
-    agentCount: 3402,
+    agentCount: 1701,
     description: 'Microsoft AI assistant'
   },
   {

@@ -1,35 +1,16 @@
 import { Link } from 'react-router-dom'
-import { Card, CardHeader, Badge, BusinessImpactBadge } from '../components/common'
-import { agents, DISPLAY_IMPACT_COUNTS } from '../data/agents'
-import { businessMetrics } from '../data/metrics'
-import { ChevronRightIcon, ExclamationTriangleIcon } from '../components/navigation/Icons'
+import { Card, CardHeader, Badge, BusinessImpactBadge, SummaryCards } from '../components/common'
+import { agents, displayTeamCounts, DISPLAY_IMPACT_COUNTS } from '../data/agents'
+import { businessMetrics, getAgentKpiConfig } from '../data/metrics'
+import { agentRand } from '../data/prng'
+import { ExclamationTriangleIcon } from '../components/navigation/Icons'
 
-const impactConfig = {
-  green: {
-    label: 'Green',
-    subtitle: 'On track',
-    variant: 'success',
-    cardClass: 'bg-emerald-50 border-emerald-200',
-    textClass: 'text-emerald-700',
-    dotClass: 'bg-emerald-500',
-  },
-  yellow: {
-    label: 'Yellow',
-    subtitle: 'Needs attention',
-    variant: 'warning',
-    cardClass: 'bg-amber-50 border-amber-200',
-    textClass: 'text-amber-700',
-    dotClass: 'bg-amber-500',
-  },
-  red: {
-    label: 'Red',
-    subtitle: 'At risk',
-    variant: 'danger',
-    cardClass: 'bg-red-50 border-red-200',
-    textClass: 'text-red-700',
-    dotClass: 'bg-red-500',
-  },
-}
+const impactItems = [
+  { key: 'green', label: 'On Track', subtitle: 'Meeting or exceeding targets', cardClass: 'bg-emerald-50 border-emerald-200', textClass: 'text-emerald-700', dotClass: 'bg-emerald-500', count: DISPLAY_IMPACT_COUNTS.green, linkTo: '/inventory?impact=green' },
+  { key: 'yellow', label: 'Needs Attention', subtitle: 'Approaching or missing targets', cardClass: 'bg-amber-50 border-amber-200', textClass: 'text-amber-700', dotClass: 'bg-amber-500', count: DISPLAY_IMPACT_COUNTS.yellow, linkTo: '/inventory?impact=yellow' },
+  { key: 'red', label: 'Critical', subtitle: 'Significantly below targets', cardClass: 'bg-red-50 border-red-200', textClass: 'text-red-700', dotClass: 'bg-red-500', count: DISPLAY_IMPACT_COUNTS.red, linkTo: '/inventory?impact=red' },
+  { key: 'missing', label: 'No KPIs', subtitle: 'Not yet configured', cardClass: 'bg-slate-50 border-slate-200', textClass: 'text-slate-500', dotClass: 'bg-slate-400', count: DISPLAY_IMPACT_COUNTS.missing, linkTo: '/inventory?impact=gray' },
+]
 
 const primaryMetricConfig = [
   { key: 'escalationRate', label: 'Escalation Rate', format: (v) => `${v}%` },
@@ -42,25 +23,33 @@ const primaryMetricConfig = [
   { key: 'completionRate', label: 'Completion Rate', format: (v) => `${v}%` },
 ]
 
-function getPrimaryMetric(agentId) {
+function getPrimaryMetric(agentId, agent) {
   const metrics = businessMetrics[agentId]
-  if (!metrics) {
-    return { label: 'Business KPI', value: 'Context-specific' }
+  if (metrics) {
+    const metricEntry = primaryMetricConfig.find(({ key }) => key in metrics)
+    if (metricEntry) {
+      return {
+        label: metricEntry.label,
+        value: metricEntry.format(metrics[metricEntry.key]),
+      }
+    }
   }
 
-  const metricEntry = primaryMetricConfig.find(({ key }) => key in metrics)
-  if (!metricEntry) {
-    return { label: 'Business KPI', value: 'Context-specific' }
-  }
-
+  // Generate a plausible KPI value from the agent's domain config
+  const kpiConfig = getAgentKpiConfig(agentId)
+  const rand = agentRand(agentId + '-biz-kpi')
+  const impact = agent?.businessImpact || 'green'
+  const penalty = impact === 'red' ? 12 : impact === 'yellow' ? 5 : 0
+  const noise = (rand() - 0.5) * 4
+  const value = Math.round(Math.max(0, Math.min(100, kpiConfig.baseValue - penalty + noise)) * 10) / 10
   return {
-    label: metricEntry.label,
-    value: metricEntry.format(metrics[metricEntry.key]),
+    label: kpiConfig.kpiLabel,
+    value: `${value}%`,
   }
 }
 
 export default function BusinessPerformance() {
-  // Display counts reflect full 4,127-agent portfolio scale
+  // Display counts reflect full 2,426-agent portfolio scale
   const impactCounts = DISPLAY_IMPACT_COUNTS
   // Real agent filter (for table and alert logic)
   const realRedCount = agents.filter((agent) => agent.businessImpact === 'red').length
@@ -73,16 +62,17 @@ export default function BusinessPerformance() {
     })
     .slice(0, 20)
 
-  const teamImpact = Object.entries(
-    agents.reduce((acc, agent) => {
-      if (!acc[agent.team]) {
-        acc[agent.team] = { green: 0, yellow: 0, red: 0 }
-      }
-      acc[agent.team][agent.businessImpact] += 1
-      return acc
-    }, {})
-  )
-    .map(([team, counts]) => ({ team, ...counts }))
+  // Scale team impact counts to match display totals
+  const totalDisplay = DISPLAY_IMPACT_COUNTS.green + DISPLAY_IMPACT_COUNTS.yellow + DISPLAY_IMPACT_COUNTS.red
+  const redRatio = DISPLAY_IMPACT_COUNTS.red / totalDisplay
+  const yellowRatio = DISPLAY_IMPACT_COUNTS.yellow / totalDisplay
+  const teamImpact = Object.entries(displayTeamCounts)
+    .map(([team, total]) => {
+      const red = Math.round(total * redRatio)
+      const yellow = Math.round(total * yellowRatio)
+      const green = total - red - yellow
+      return { team, green, yellow, red, total }
+    })
     .sort((a, b) => b.red - a.red || b.yellow - a.yellow || a.team.localeCompare(b.team))
     .slice(0, 10)
 
@@ -95,23 +85,7 @@ export default function BusinessPerformance() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {(['green', 'yellow', 'red']).map((impact) => {
-          const config = impactConfig[impact]
-          return (
-            <Card key={impact} className={`border ${config.cardClass}`}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${config.dotClass}`} />
-                  <p className={`font-semibold ${config.textClass}`}>{config.label}</p>
-                </div>
-                <p className={`text-2xl font-bold ${config.textClass}`}>{impactCounts[impact].toLocaleString()}</p>
-              </div>
-              <p className="text-sm text-slate-600">{config.subtitle}</p>
-            </Card>
-          )
-        })}
-      </div>
+      <SummaryCards items={impactItems} />
 
       {realRedCount > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
@@ -140,18 +114,18 @@ export default function BusinessPerformance() {
                 <th className="py-3 pr-3">Team</th>
                 <th className="py-3 pr-3">Impact</th>
                 <th className="py-3 pr-3">Primary KPI</th>
-                <th className="py-3 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {highlightedAgents.map((agent) => {
-                const metric = getPrimaryMetric(agent.id)
-                const config = impactConfig[agent.businessImpact]
+                const metric = getPrimaryMetric(agent.id, agent)
                 return (
                   <tr key={agent.id} className="hover:bg-slate-50">
                     <td className="py-3 pr-3">
-                      <p className="font-medium text-slate-900">{agent.name}</p>
-                      <p className="text-xs text-slate-500">{agent.domain}</p>
+                      <Link to={`/agents/${agent.id}`} className="group">
+                        <p className="font-medium text-slate-900 group-hover:text-primary-600 transition-colors">{agent.name}</p>
+                        <p className="text-xs text-slate-500">{agent.domain}</p>
+                      </Link>
                     </td>
                     <td className="py-3 pr-3 text-slate-700">{agent.team}</td>
                     <td className="py-3 pr-3">
@@ -160,14 +134,6 @@ export default function BusinessPerformance() {
                     <td className="py-3 pr-3">
                       <p className="font-medium text-slate-900">{metric.value}</p>
                       <p className="text-xs text-slate-500">{metric.label}</p>
-                    </td>
-                    <td className="py-3 text-right">
-                      <Link
-                        to={`/agents/${agent.id}`}
-                        className="text-primary-600 hover:text-primary-700 inline-flex items-center gap-1 font-medium"
-                      >
-                        Open Agent 360 <ChevronRightIcon className="w-4 h-4" />
-                      </Link>
                     </td>
                   </tr>
                 )
@@ -179,17 +145,29 @@ export default function BusinessPerformance() {
 
       <Card>
         <CardHeader title="Impact by Team" subtitle="Teams with the most agents needing attention" />
-        <div className="space-y-3">
-          {teamImpact.map((row) => (
-            <div key={row.team} className="flex items-center justify-between border border-slate-200 rounded-lg px-4 py-3">
-              <p className="text-sm font-medium text-slate-900">{row.team}</p>
-              <div className="flex items-center gap-2 text-xs">
-                <Badge variant="danger" dot>Red {row.red}</Badge>
-                <Badge variant="warning" dot>Yellow {row.yellow}</Badge>
-                <Badge variant="success" dot>Green {row.green}</Badge>
-              </div>
-            </div>
-          ))}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                <th className="py-3 pr-3">Team</th>
+                <th className="py-3 pr-3 text-right">Total</th>
+                <th className="py-3 pr-3 text-right">On Track</th>
+                <th className="py-3 pr-3 text-right">Needs Attention</th>
+                <th className="py-3 text-right">Critical</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {teamImpact.map((row) => (
+                <tr key={row.team} className="hover:bg-slate-50">
+                  <td className="py-3 pr-3 font-medium text-slate-900">{row.team}</td>
+                  <td className="py-3 pr-3 text-right text-slate-700">{row.total}</td>
+                  <td className="py-3 pr-3 text-right text-emerald-600 font-medium">{row.green}</td>
+                  <td className="py-3 pr-3 text-right text-amber-600 font-medium">{row.yellow}</td>
+                  <td className="py-3 text-right text-red-600 font-medium">{row.red}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </Card>
     </div>

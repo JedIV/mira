@@ -10,7 +10,7 @@ const enterpriseTopicData = [
   { name: 'Transaction Help', cs: 20, fraud: 8, loan: 25, it: 5, onboard: 10 },
   { name: 'Card Services', cs: 17, fraud: 2, loan: 5, it: 3, onboard: 8 },
   { name: 'General', cs: 5, fraud: 3, loan: 8, it: 15, onboard: 12 },
-  { name: 'No Snow', cs: 19, fraud: 1, loan: 2, it: 8, onboard: 3 },
+  { name: 'No Snow', cs: 24, fraud: 1, loan: 2, it: 8, onboard: 3 },
 ]
 
 const trendOverTime = [
@@ -20,14 +20,97 @@ const trendOverTime = [
   { month: 'Oct', 'no-snow': 8 },
   { month: 'Nov', 'no-snow': 15 },
   { month: 'Dec', 'no-snow': 19 },
+  { month: 'Jan', 'no-snow': 22 },
+  { month: 'Feb', 'no-snow': 24 },
 ]
 
 const affectedAgents = [
-  { id: 'cs-agent-001', name: 'Customer Service', impact: 19, severity: 'high' },
+  { id: 'cs-agent-001', name: 'Customer Service', impact: 24, severity: 'high' },
   { id: 'it-support-004', name: 'IT Support', impact: 8, severity: 'medium' },
   { id: 'onboarding-005', name: 'Customer Onboarding', impact: 3, severity: 'low' },
   { id: 'loan-agent-003', name: 'Loan Processing', impact: 2, severity: 'low' },
   { id: 'fraud-agent-002', name: 'Fraud Detection', impact: 1, severity: 'low' },
+]
+
+// All detected drift alerts across the enterprise
+const driftAlerts = [
+  {
+    id: 'drift-001',
+    topic: 'No Snow',
+    description: 'Seasonal weather topic appearing across customer-facing agents',
+    agentCount: 5,
+    peakImpact: '24%',
+    severity: 'high',
+    trend: 'growing',
+    firstDetected: 'Sep 2025',
+    primaryAgent: 'Customer Service',
+  },
+  {
+    id: 'drift-002',
+    topic: 'Crypto Inquiries',
+    description: 'Customers asking about cryptocurrency services not offered by the bank',
+    agentCount: 3,
+    peakImpact: '11%',
+    severity: 'medium',
+    trend: 'growing',
+    firstDetected: 'Oct 2025',
+    primaryAgent: 'Investment Advisor',
+  },
+  {
+    id: 'drift-003',
+    topic: 'Competitor Comparison',
+    description: 'Users comparing rates and services with competitor banks',
+    agentCount: 4,
+    peakImpact: '7%',
+    severity: 'medium',
+    trend: 'stable',
+    firstDetected: 'Nov 2025',
+    primaryAgent: 'Loan Processing',
+  },
+  {
+    id: 'drift-004',
+    topic: 'App Store Reviews',
+    description: 'Customers pasting negative app store reviews into chat for resolution',
+    agentCount: 2,
+    peakImpact: '5%',
+    severity: 'low',
+    trend: 'growing',
+    firstDetected: 'Nov 2025',
+    primaryAgent: 'Customer Service',
+  },
+  {
+    id: 'drift-005',
+    topic: 'Regulatory Questions',
+    description: 'Increased questions about CFPB rules and consumer rights',
+    agentCount: 3,
+    peakImpact: '6%',
+    severity: 'medium',
+    trend: 'growing',
+    firstDetected: 'Oct 2025',
+    primaryAgent: 'Collections',
+  },
+  {
+    id: 'drift-006',
+    topic: 'Deceased Account Handling',
+    description: 'Spike in estate and deceased account processing queries',
+    agentCount: 2,
+    peakImpact: '4%',
+    severity: 'low',
+    trend: 'stable',
+    firstDetected: 'Dec 2025',
+    primaryAgent: 'Customer Onboarding',
+  },
+  {
+    id: 'drift-007',
+    topic: 'Multilingual Requests',
+    description: 'Growing volume of non-English conversations in English-only agents',
+    agentCount: 4,
+    peakImpact: '9%',
+    severity: 'medium',
+    trend: 'growing',
+    firstDetected: 'Sep 2025',
+    primaryAgent: 'IT Support',
+  },
 ]
 
 const topicBarData = enterpriseTopicData.map(t => ({
@@ -54,17 +137,74 @@ export default function BehaviorTrends() {
             <span className="text-white font-bold">!</span>
           </div>
           <div>
-            <p className="font-semibold text-danger-dark">Emerging Topic Detected Across Multiple Agents</p>
+            <p className="font-semibold text-danger-dark">{driftAlerts.length} Behavior Drift Alerts Detected</p>
             <p className="text-sm text-danger-dark/80 mt-1">
-              The "no snow" topic has been detected across <strong>5 agents</strong> in the enterprise,
-              with the highest impact on Customer Service (19%). This appears to be a seasonal pattern
-              affecting customer-facing agents.
+              <strong>{driftAlerts.length} emerging topics</strong> have been detected across the agent portfolio.
+              Highest severity: "No Snow" topic at 24% in Customer Service. {driftAlerts.filter(d => d.trend === 'growing').length} alerts are still growing.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Enterprise Topic Distribution */}
+      {/* Drift Alert Summary */}
+      <Card>
+        <CardHeader
+          title="Active Drift Alerts"
+          subtitle={`${driftAlerts.length} emerging topics detected across the enterprise`}
+        />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="pb-3">Topic</th>
+                <th className="pb-3">Primary Agent</th>
+                <th className="pb-3 text-center">Agents Affected</th>
+                <th className="pb-3 text-center">Peak Impact</th>
+                <th className="pb-3 text-center">Severity</th>
+                <th className="pb-3 text-center">Trend</th>
+                <th className="pb-3">First Detected</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {driftAlerts.map((alert) => (
+                <tr key={alert.id} className={alert.severity === 'high' ? 'bg-danger-light/20' : ''}>
+                  <td className="py-3">
+                    <span className="font-medium text-slate-900">{alert.topic}</span>
+                  </td>
+                  <td className="py-3 text-slate-600">{alert.primaryAgent}</td>
+                  <td className="py-3 text-center font-medium">{alert.agentCount}</td>
+                  <td className="py-3 text-center">
+                    <span className={`font-semibold ${
+                      parseInt(alert.peakImpact) > 10 ? 'text-danger' :
+                      parseInt(alert.peakImpact) > 5 ? 'text-warning' : 'text-slate-600'
+                    }`}>
+                      {alert.peakImpact}
+                    </span>
+                  </td>
+                  <td className="py-3 text-center">
+                    <Badge
+                      variant={alert.severity === 'high' ? 'danger' : alert.severity === 'medium' ? 'warning' : 'neutral'}
+                    >
+                      {alert.severity}
+                    </Badge>
+                  </td>
+                  <td className="py-3 text-center">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      alert.trend === 'growing' ? 'bg-danger-light text-danger-dark' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {alert.trend === 'growing' ? '↑ Growing' : '→ Stable'}
+                    </span>
+                  </td>
+                  <td className="py-3 text-slate-500 text-xs">{alert.firstDetected}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* Enterprise Topic Distribution — Deep Dive on "No Snow" */}
+      <h2 className="text-lg font-semibold text-slate-800 mt-2">Deep Dive: "No Snow" Topic (Highest Severity)</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader
@@ -92,7 +232,7 @@ export default function BehaviorTrends() {
             height={300}
           />
           <div className="mt-4 p-3 bg-slate-50 rounded-lg text-sm text-slate-600">
-            First detected in September with 2% of conversations. Growth accelerated through Q4, reaching 19% by December.
+            First detected in September with 2% of conversations. Growth accelerated through Q4 and continues into 2025, reaching 24% by February.
           </div>
         </Card>
       </div>

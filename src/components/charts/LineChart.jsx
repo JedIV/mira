@@ -108,9 +108,9 @@ export function MultiLineChart({
             dataKey={line.dataKey}
             name={line.name}
             stroke={line.color}
-            strokeWidth={2}
-            dot={{ fill: line.color, strokeWidth: 0, r: 3 }}
-            activeDot={{ fill: line.color, strokeWidth: 0, r: 5 }}
+            strokeWidth={line.strokeWidth || 2}
+            dot={{ fill: line.color, strokeWidth: 0, r: line.strokeWidth > 2 ? 4 : 3 }}
+            activeDot={{ fill: line.color, strokeWidth: 0, r: line.strokeWidth > 2 ? 6 : 5 }}
           />
         ))}
       </RechartsLine>

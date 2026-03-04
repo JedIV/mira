@@ -52,6 +52,7 @@ export function StatusBadge({ status }) {
     'pending-approval': { variant: 'warning', label: 'Pending Approval' },
     'pending-ai': { variant: 'warning', label: 'Pending AI Review' },
     'pending-compliance': { variant: 'warning', label: 'Pending Compliance' },
+    'pending-security': { variant: 'warning', label: 'Pending Security' },
   }
 
   const { variant, label, dot } = config[status] || { variant: 'neutral', label: status }

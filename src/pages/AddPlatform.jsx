@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Card } from '../components/common'
 import { availablePlatforms, connectionFormFields, mockScanResults } from '../data/platforms'
+import { addImportedAgents } from '../data/importedAgents'
 import PlatformLogo from '../components/PlatformLogo'
 import { CheckCircleIcon, ChevronRightIcon } from '../components/navigation/Icons'
 
@@ -332,7 +333,7 @@ function StepScanResults({ platformId }) {
 
       <div className="flex items-center gap-3 mt-6">
         <button
-          onClick={() => setImported(true)}
+          onClick={() => { addImportedAgents(selected.size); setImported(true) }}
           disabled={selected.size === 0}
           className="px-5 py-2.5 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -343,7 +344,7 @@ function StepScanResults({ platformId }) {
         </button>
         {selected.size > 0 && selected.size < results.length && (
           <button
-            onClick={() => { setSelected(new Set(results.map((_, i) => i))); setImported(true) }}
+            onClick={() => { const all = new Set(results.map((_, i) => i)); setSelected(all); addImportedAgents(results.length); setImported(true) }}
             className="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors"
           >
             Import All ({results.length})
