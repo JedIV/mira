@@ -111,7 +111,7 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
 
       {/* Decision Flow Analysis */}
       <Card>
-        <CardHeader title="Decision Flow Analysis" subtitle="KYC routing from Dec 2025 baseline to Feb 2026 — red highlights the non-US escalation path" />
+        <CardHeader title="Decision Flow Analysis" subtitle="Application routing since December release, compared to current state" />
         <TraceFlowDiagram />
       </Card>
 
