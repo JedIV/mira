@@ -333,7 +333,7 @@ function StatusBoard() {
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Platform Status</p>
-          <Link to="/platforms" className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors">
+          <Link to="/settings" className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors">
             Manage
           </Link>
         </div>

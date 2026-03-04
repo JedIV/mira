@@ -249,7 +249,7 @@ function StepScanResults({ platformId }) {
             Go to Inventory
           </Link>
           <Link
-            to="/platforms"
+            to="/settings"
             className="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors"
           >
             Back to Platforms
@@ -377,7 +377,7 @@ export default function AddPlatform() {
     <div className="space-y-6 animate-fade-in">
       <div className="page-header">
         <div className="flex items-center gap-2 text-sm text-slate-400 mb-3">
-          <Link to="/platforms" className="hover:text-slate-200 transition-colors">Platforms</Link>
+          <Link to="/settings" className="hover:text-slate-200 transition-colors">Platforms</Link>
           <ChevronRightIcon className="w-3.5 h-3.5" />
           <span className="text-slate-200">Add Platform</span>
         </div>
@@ -404,7 +404,7 @@ export default function AddPlatform() {
         {step < 3 && (
           <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
             <button
-              onClick={() => step === 0 ? navigate('/platforms') : setStep(step - 1)}
+              onClick={() => step === 0 ? navigate('/settings') : setStep(step - 1)}
               className="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
             >
               {step === 0 ? 'Cancel' : 'Back'}
