@@ -3,8 +3,8 @@
 // We keep the actual agent records small; these constants drive summary displays
 export const DISPLAY_TOTAL_AGENTS = 4127
 export const DISPLAY_ACTIVE_AGENTS = 3982
-export const DISPLAY_DEGRADED_AGENTS = 48
-export const DISPLAY_MAINTENANCE_AGENTS = 12
+export const DISPLAY_DEGRADED_AGENTS = 51
+export const DISPLAY_MAINTENANCE_AGENTS = 14
 export const DISPLAY_IMPACT_COUNTS = { green: 3412, yellow: 574, red: 141 }
 
 // Team-level display counts — scaled to reflect the full 4,127 agent portfolio.
