@@ -35,11 +35,11 @@ const baseline = {
 }
 
 const current = {
-  nodes: { application: 362, doc_class: 362, identity: 362, passport_us: 217, passport_non_us: 145, auto_approve: 279, manual_escalation: 83 },
+  nodes: { application: 362, doc_class: 362, identity: 362, passport_us: 212, passport_non_us: 150, auto_approve: 276, manual_escalation: 86 },
   edges: {
-    'application->doc_class': 362, 'doc_class->identity': 362, 'identity->passport_us': 217, 'identity->passport_non_us': 145,
-    'passport_us->auto_approve': 207, 'passport_us->manual_escalation': 10,
-    'passport_non_us->auto_approve': 72, 'passport_non_us->manual_escalation': 73,
+    'application->doc_class': 362, 'doc_class->identity': 362, 'identity->passport_us': 212, 'identity->passport_non_us': 150,
+    'passport_us->auto_approve': 202, 'passport_us->manual_escalation': 10,
+    'passport_non_us->auto_approve': 74, 'passport_non_us->manual_escalation': 76,
   },
 }
 

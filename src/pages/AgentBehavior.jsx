@@ -77,9 +77,9 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
               <span className="text-white font-bold">!</span>
             </div>
             <div>
-              <p className="font-semibold text-red-700">Root Cause Identified: Address Verification Model Regression</p>
-              <p className="text-sm text-red-600/80 mt-1">{driftAlert.headerText}</p>
-              <p className="text-sm text-red-600/70 mt-1">{driftAlert.bodyText}</p>
+              <p className="font-semibold text-red-700">Outcome Shift Detected Since December Release</p>
+              <p className="text-sm text-red-600/80 mt-1">Escalation rate has climbed from 8% to 23% since the December deployment. Manual review volumes are up 62% and average processing time has doubled.</p>
+              <p className="text-sm text-red-600/70 mt-1">The shift correlates with increased address verification failures — 72% of escalated cases involve address checks. Review the decision flow below to identify where routing has changed.</p>
             </div>
           </div>
         </div>
@@ -111,7 +111,7 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
 
       {/* Decision Flow Analysis */}
       <Card>
-        <CardHeader title="Decision Flow Analysis" subtitle="KYC routing from Sep 2025 baseline to Feb 2026 — red highlights the non-US escalation path" />
+        <CardHeader title="Decision Flow Analysis" subtitle="KYC routing from Dec 2025 baseline to Feb 2026 — red highlights the non-US escalation path" />
         <TraceFlowDiagram />
       </Card>
 
