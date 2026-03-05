@@ -9,69 +9,65 @@ import { formatDateTime } from '../utils/formatters'
 
 function ConversationCard({ conv, highlightTopic }) {
   const [expanded, setExpanded] = useState(false)
-  const isHighlighted = conv.topic === highlightTopic
+  const isEscalated = conv.topic === highlightTopic
+  const outcomeLabel = isEscalated ? 'Escalated' : 'Approved'
+
   return (
-    <div
-      className={`rounded-lg border ${
-        isHighlighted ? 'border-danger bg-danger-light/30' : 'border-slate-200 bg-slate-50'
-      }`}
-    >
-      <div className="p-4">
+    <div className={`rounded-lg border-l-4 border border-slate-200 ${
+      isEscalated ? 'border-l-red-400 bg-red-50/30' : 'border-l-emerald-400 bg-emerald-50/30'
+    }`}>
+      <div className="p-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <Badge variant={isHighlighted ? 'danger' : 'neutral'}>
-              {conv.topic.replace(/-/g, ' ')}
-            </Badge>
-            <Badge variant="neutral">{conv.channel}</Badge>
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+              isEscalated ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
+            }`}>{outcomeLabel}</span>
+            <span className="text-xs text-slate-400">{formatDateTime(conv.timestamp)}</span>
           </div>
-          <span className="text-xs text-slate-400">{formatDateTime(conv.timestamp)}</span>
+          {conv.reasoning && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors"
+            >
+              <span className={`transition-transform text-[10px] ${expanded ? 'rotate-90' : ''}`}>▶</span>
+              Trace
+            </button>
+          )}
         </div>
-        <div className="space-y-2 text-sm">
+        <div className="space-y-1.5 text-sm">
           {conv.messages.map((msg, i) => (
-            <div key={i} className={`flex gap-2 ${msg.role === 'user' ? '' : 'pl-4'}`}>
-              <span className={`font-medium flex-shrink-0 ${msg.role === 'user' ? 'text-slate-700' : 'text-primary-600'}`}>
-                {msg.role === 'user' ? 'User:' : 'Agent:'}
+            <div key={i} className={msg.role === 'user' ? '' : 'pl-4'}>
+              <span className={`font-medium ${msg.role === 'user' ? 'text-slate-700' : 'text-primary-600'}`}>
+                {msg.role === 'user' ? 'Input: ' : 'Output: '}
               </span>
               <span className="text-slate-600">{msg.content}</span>
             </div>
           ))}
         </div>
       </div>
-      {conv.reasoning && (
-        <>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="w-full px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 border-t border-slate-200 flex items-center gap-1 hover:bg-slate-50/50 transition-colors"
-          >
-            <span className={`transition-transform ${expanded ? 'rotate-90' : ''}`}>▶</span>
-            Routing Trace ({conv.reasoning.length} steps)
-          </button>
-          {expanded && (
-            <div className="px-4 pb-3 space-y-1.5">
-              {conv.reasoning.map((step) => (
-                <div
-                  key={step.step}
-                  className={`px-3 py-2 rounded text-xs ${
-                    step.confidence < 0.75
-                      ? 'bg-warning-light text-warning-dark'
-                      : 'bg-white border border-slate-200 text-slate-600'
-                  }`}
-                >
-                  <span className="font-medium">Step {step.step}:</span> {step.action}
-                  <span className="ml-2 opacity-60">({(step.confidence * 100).toFixed(0)}%)</span>
-                </div>
-              ))}
+      {expanded && conv.reasoning && (
+        <div className="px-3 pb-3 pt-1 border-t border-slate-200/60 space-y-1">
+          {conv.reasoning.map((step) => (
+            <div
+              key={step.step}
+              className={`px-2.5 py-1.5 rounded text-xs ${
+                step.confidence < 0.75
+                  ? 'bg-amber-50 text-amber-800'
+                  : 'bg-white text-slate-600'
+              }`}
+            >
+              <span className="font-medium">{step.step}.</span> {step.action}
+              <span className="ml-1.5 opacity-50">({(step.confidence * 100).toFixed(0)}%)</span>
             </div>
-          )}
-        </>
+          ))}
+        </div>
       )}
     </div>
   )
 }
 
 function KycBehaviorView({ agent, conversations, driftAlert }) {
-  const escalatedConvs = conversations.filter(c => c.topic === 'address-verification-failure').slice(0, 2)
-  const approvedConvs = conversations.filter(c => c.topic !== 'address-verification-failure').slice(0, 2)
+  const allConvs = conversations.slice(0, 10)
 
   return (
     <>
@@ -113,26 +109,15 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
         <TraceFlowDiagram />
       </Card>
 
-      {/* Escalated vs Approved — 2 each */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader title="Escalated Cases" subtitle="Non-US passport applications routed to manual review" />
-          <div className="space-y-4">
-            {escalatedConvs.map((conv) => (
-              <ConversationCard key={conv.id} conv={conv} highlightTopic="address-verification-failure" />
-            ))}
-          </div>
-        </Card>
-
-        <Card>
-          <CardHeader title="Auto-Approved Cases" subtitle="US passport applications passing all checks" />
-          <div className="space-y-4">
-            {approvedConvs.map((conv) => (
-              <ConversationCard key={conv.id} conv={conv} />
-            ))}
-          </div>
-        </Card>
-      </div>
+      {/* Recent Sessions */}
+      <Card>
+        <CardHeader title="Recent Sessions" subtitle="Sampled KYC verification sessions with outcomes" />
+        <div className="space-y-3">
+          {allConvs.map((conv) => (
+            <ConversationCard key={conv.id} conv={conv} highlightTopic="address-verification-failure" />
+          ))}
+        </div>
+      </Card>
     </>
   )
 }
