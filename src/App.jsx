@@ -14,10 +14,12 @@ import AgentAccess from './pages/AgentAccess'
 import Settings from './pages/Settings'
 import AddPlatform from './pages/AddPlatform'
 import Login from './pages/Login'
+import Script from './pages/Script'
 
 function App() {
   return (
     <Routes>
+      <Route path="/script" element={<Script />} />
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Dashboard />} />
