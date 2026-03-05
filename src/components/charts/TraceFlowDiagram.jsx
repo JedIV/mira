@@ -4,7 +4,7 @@ import dagre from 'cytoscape-dagre'
 
 cytoscape.use(dagre)
 
-const nodes = [
+const nodesDef = [
   { id: 'application', label: 'KYC Orchestrator', role: 'agent', roleLabel: 'AGENT' },
   { id: 'identity', label: 'Identity Verifier', role: 'tool', roleLabel: 'TOOL' },
   { id: 'passport_us', label: 'US Passport Agent', role: 'subagent', roleLabel: 'SUB-AGENT' },
@@ -23,39 +23,11 @@ const edgeDefs = [
   ['passport_non_us', 'manual_escalation'],
 ]
 
-const baseline = {
-  nodes: { application: 287, identity: 287, passport_us: 172, passport_non_us: 115, auto_approve: 264, manual_escalation: 23 },
-  edges: {
-    'application->identity': 287, 'identity->passport_us': 172, 'identity->passport_non_us': 115,
-    'passport_us->auto_approve': 165, 'passport_us->manual_escalation': 7,
-    'passport_non_us->auto_approve': 99, 'passport_non_us->manual_escalation': 16,
-  },
-}
-
-const current = {
-  nodes: { application: 362, identity: 362, passport_us: 212, passport_non_us: 150, auto_approve: 279, manual_escalation: 83 },
-  edges: {
-    'application->identity': 362, 'identity->passport_us': 212, 'identity->passport_non_us': 150,
-    'passport_us->auto_approve': 202, 'passport_us->manual_escalation': 10,
-    'passport_non_us->auto_approve': 77, 'passport_non_us->manual_escalation': 73,
-  },
-}
-
 const PROBLEM_EDGE = 'passport_non_us->manual_escalation'
 const DECLINING_EDGE = 'passport_non_us->auto_approve'
 
 function pct(value, total) {
   return total ? (value / total) * 100 : 0
-}
-
-function edgePctOfSource(edgeKey) {
-  const source = edgeKey.split('->')[0]
-  return pct(current.edges[edgeKey] ?? 0, current.nodes[source])
-}
-
-function baselineEdgePctOfSource(edgeKey) {
-  const source = edgeKey.split('->')[0]
-  return pct(baseline.edges[edgeKey] ?? 0, baseline.nodes[source])
 }
 
 function createStylesheet() {
@@ -167,32 +139,32 @@ function createStylesheet() {
   ]
 }
 
-export default function TraceFlowDiagram() {
+export default function TraceFlowDiagram({ baselineStats, currentStats }) {
   const cyRef = useRef(null)
   const containerRef = useRef(null)
 
-  const baselineTotal = baseline.nodes.application
-  const currentTotal = current.nodes.application
-
   const elements = useMemo(() => {
+    const baselineTotal = baselineStats.nodes.application
+    const currentTotal = currentStats.nodes.application
     const passthroughNodes = new Set(['application', 'identity'])
 
-    const nodeElements = nodes.map((node) => {
-      const curPct = pct(current.nodes[node.id] ?? 0, currentTotal)
-      const basePct = pct(baseline.nodes[node.id] ?? 0, baselineTotal)
+    const nodeElements = nodesDef.map((node) => {
+      const curPct = pct(currentStats.nodes[node.id] ?? 0, currentTotal)
+      const basePct = pct(baselineStats.nodes[node.id] ?? 0, baselineTotal)
       const deltaPp = curPct - basePct
       const deltaSign = deltaPp > 0 ? '+' : ''
 
       const isPassthrough = passthroughNodes.has(node.id)
-      const isProblem = node.id === 'manual_escalation'
-      const isHealthy = node.id === 'auto_approve'
+      const absDelta = Math.abs(deltaPp)
+      const hasShift = absDelta > 3
+      const isProblem = node.id === 'manual_escalation' && hasShift && deltaPp > 0
+      const isHealthy = node.id === 'auto_approve' && hasShift && deltaPp < 0
       const isPassport = node.id === 'passport_us' || node.id === 'passport_non_us'
 
       let display
       if (isPassthrough) {
         display = `${node.roleLabel}\n${node.label}`
       } else {
-        const absDelta = Math.abs(deltaPp)
         const arrow = deltaPp > 0.5 ? '\u25B2' : deltaPp < -0.5 ? '\u25BC' : ''
         display = `${node.label}\n${arrow} ${deltaSign}${absDelta.toFixed(0)}%\n(now ${curPct.toFixed(0)}%)`
       }
@@ -211,15 +183,21 @@ export default function TraceFlowDiagram() {
 
     const edgeElements = edgeDefs.map(([from, to]) => {
       const key = `${from}->${to}`
-      const curPct = edgePctOfSource(key)
       const isPassthrough = passthroughNodes.has(from) && passthroughNodes.has(to)
-      const isProblem = key === PROBLEM_EDGE
-      const isDeclining = key === DECLINING_EDGE
 
+      const curPct = pct(currentStats.edges[key] ?? 0, currentStats.nodes[from])
+      const basePct = pct(baselineStats.edges[key] ?? 0, baselineStats.nodes[from])
+      const deltaPp = curPct - basePct  // positive = grew, negative = shrank
+
+      // Flag edges with meaningful deltas (>3pp) as problem (grew) or declining (shrank)
+      const isProblem = !isPassthrough && deltaPp > 3
+      const isDeclining = !isPassthrough && deltaPp < -3
+
+      // Scale stroke width by delta magnitude: 3pp → thin (2), 35pp → max (8)
       let strokeWidth = 1.5
-      if (isProblem) strokeWidth = 8
-      else if (isDeclining) strokeWidth = 4
-      else if (isPassthrough) strokeWidth = 1
+      if (isPassthrough) strokeWidth = 1
+      else if (isProblem) strokeWidth = 2 + (Math.min(deltaPp, 35) / 35) * 6
+      else if (isDeclining) strokeWidth = 2 + (Math.min(-deltaPp, 35) / 35) * 4
       else strokeWidth = 1 + (curPct / 100) * 3
 
       return {
@@ -236,7 +214,7 @@ export default function TraceFlowDiagram() {
     })
 
     return [...nodeElements, ...edgeElements]
-  }, [baselineTotal, currentTotal])
+  }, [baselineStats, currentStats])
 
   useEffect(() => {
     if (!containerRef.current) return

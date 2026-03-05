@@ -24,13 +24,13 @@ function App() {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="inventory" element={<AgentInventory />} />
-        <Route path="performance/technical" element={<TechnicalPerformance />} />
+        <Route path="performance/operational" element={<TechnicalPerformance />} />
         <Route path="performance/business" element={<BusinessPerformance />} />
         <Route path="agents/:agentId" element={<AgentDetail />} />
         <Route path="agents/:agentId/behavior" element={<AgentBehavior />} />
         <Route path="agents/:agentId/logs" element={<AgentLogs />} />
         <Route path="agents/:agentId/access" element={<AgentAccess />} />
-        <Route path="behavior/trends" element={<BehaviorTrends />} />
+        <Route path="usage-trends" element={<BehaviorTrends />} />
         <Route path="testing" element={<Testing />} />
         <Route path="governance" element={<Governance />} />
         <Route path="settings" element={<Settings />} />

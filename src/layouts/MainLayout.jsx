@@ -9,7 +9,7 @@ export default function MainLayout() {
   const showNavPane = showNavPaneRoutes.some(route => location.pathname.startsWith(route))
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex h-screen overflow-hidden bg-paper">
       <Sidebar />
       {showNavPane && <AgentNavPane />}
       <div className="flex-1 flex flex-col overflow-hidden">

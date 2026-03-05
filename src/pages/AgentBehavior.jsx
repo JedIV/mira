@@ -1,73 +1,93 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Card, CardHeader, Badge } from '../components/common'
 import { DonutChart } from '../components/charts'
 import TraceFlowDiagram from '../components/charts/TraceFlowDiagram'
 import { getAgentById } from '../data/agents'
 import { getConversationsByAgent, getTopicDistributions, getDriftAlert, getTopicColor } from '../data/conversations'
+import { computeFlowStats, sampleTraces, traceToConversation } from '../data/kycTraceGenerator'
+import { tracesByWindow, februaryTraces } from '../data/kycTraces'
 import { formatDateTime } from '../utils/formatters'
+
+function summarizeConv(conv) {
+  const input = conv.messages.find(m => m.role === 'user')
+  return input ? input.content.split('.')[0] : 'KYC verification session'
+}
 
 function ConversationCard({ conv, highlightTopic }) {
   const [expanded, setExpanded] = useState(false)
   const isEscalated = conv.topic === highlightTopic
   const outcomeLabel = isEscalated ? 'Escalated' : 'Approved'
+  const summary = summarizeConv(conv)
 
   return (
-    <div className={`rounded-lg border-l-4 border border-slate-200 ${
-      isEscalated ? 'border-l-red-400 bg-red-50/30' : 'border-l-emerald-400 bg-emerald-50/30'
-    }`}>
-      <div className="p-3">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
-              isEscalated ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
-            }`}>{outcomeLabel}</span>
-            <span className="text-xs text-slate-400">{formatDateTime(conv.timestamp)}</span>
+    <div
+      className={`border-l-2 ${isEscalated ? 'border-l-red-400' : 'border-l-emerald-400'} cursor-pointer group`}
+      onClick={() => setExpanded(!expanded)}
+    >
+      {/* Summary row */}
+      <div className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50/80 transition-colors">
+        <span className={`text-[10px] font-bold uppercase tracking-wide w-16 flex-shrink-0 ${
+          isEscalated ? 'text-red-500' : 'text-emerald-500'
+        }`}>{outcomeLabel}</span>
+        <span className="text-sm text-slate-600 truncate flex-1">{summary}</span>
+        <span className="text-[11px] text-slate-400 flex-shrink-0">{formatDateTime(conv.timestamp)}</span>
+        <span className={`text-[10px] text-slate-300 transition-transform ${expanded ? 'rotate-90' : ''}`}>▶</span>
+      </div>
+
+      {/* Expanded: conversation + trace */}
+      {expanded && (
+        <div className="px-3 pb-3 ml-[4.5rem] border-t border-slate-100">
+          <div className="space-y-1.5 pt-2 text-sm">
+            {conv.messages.map((msg, i) => (
+              <div key={i} className={msg.role === 'user' ? '' : 'pl-4'}>
+                <span className={`font-medium ${msg.role === 'user' ? 'text-slate-700' : 'text-primary-600'}`}>
+                  {msg.role === 'user' ? 'Input: ' : 'Output: '}
+                </span>
+                <span className="text-slate-600">{msg.content}</span>
+              </div>
+            ))}
           </div>
           {conv.reasoning && (
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 transition-colors"
-            >
-              <span className={`transition-transform text-[10px] ${expanded ? 'rotate-90' : ''}`}>▶</span>
-              Trace
-            </button>
+            <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Trace</span>
+              {conv.reasoning.map((step) => (
+                <div
+                  key={step.step}
+                  className={`px-2.5 py-1.5 rounded text-xs ${
+                    step.confidence < 0.75
+                      ? 'bg-amber-50 text-amber-800'
+                      : 'bg-slate-50 text-slate-600'
+                  }`}
+                >
+                  <span className="font-medium">{step.step}.</span> {step.action}
+                  <span className="ml-1.5 opacity-50">({(step.confidence * 100).toFixed(0)}%)</span>
+                </div>
+              ))}
+            </div>
           )}
-        </div>
-        <div className="space-y-1.5 text-sm">
-          {conv.messages.map((msg, i) => (
-            <div key={i} className={msg.role === 'user' ? '' : 'pl-4'}>
-              <span className={`font-medium ${msg.role === 'user' ? 'text-slate-700' : 'text-primary-600'}`}>
-                {msg.role === 'user' ? 'Input: ' : 'Output: '}
-              </span>
-              <span className="text-slate-600">{msg.content}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      {expanded && conv.reasoning && (
-        <div className="px-3 pb-3 pt-1 border-t border-slate-200/60 space-y-1">
-          {conv.reasoning.map((step) => (
-            <div
-              key={step.step}
-              className={`px-2.5 py-1.5 rounded text-xs ${
-                step.confidence < 0.75
-                  ? 'bg-amber-50 text-amber-800'
-                  : 'bg-white text-slate-600'
-              }`}
-            >
-              <span className="font-medium">{step.step}.</span> {step.action}
-              <span className="ml-1.5 opacity-50">({(step.confidence * 100).toFixed(0)}%)</span>
-            </div>
-          ))}
         </div>
       )}
     </div>
   )
 }
 
+function monthLabel(monthsAgo) {
+  const d = new Date()
+  d.setMonth(d.getMonth() - monthsAgo)
+  return d.toLocaleString('default', { month: 'short', year: 'numeric' })
+}
+
 function KycBehaviorView({ agent, conversations, driftAlert }) {
-  const allConvs = conversations.slice(0, 10)
+  const [window, setWindow] = useState(3)
+
+  const currentStats = useMemo(() => computeFlowStats(februaryTraces), [])
+  const baselineStats = useMemo(() => computeFlowStats(tracesByWindow[window]), [window])
+
+  const allConvs = useMemo(
+    () => sampleTraces(februaryTraces, 10).map((t, i) => traceToConversation(t, i)),
+    [],
+  )
 
   return (
     <>
@@ -92,27 +112,25 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
           <h3 className="text-lg font-semibold">Decision Flow Analysis</h3>
           <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-400">Comparing</span>
-            <select className="bg-slate-100 border border-slate-200 rounded-md px-3 py-1.5 text-slate-700 font-medium text-sm cursor-pointer" defaultValue="dec-1">
-              <option value="dec-1">Dec 1, 2025</option>
-              <option value="nov-1">Nov 1, 2025</option>
-              <option value="oct-1">Oct 1, 2025</option>
-              <option value="sep-1">Sep 1, 2025</option>
+            <select
+              className="bg-slate-100 border border-slate-200 rounded-md px-3 py-1.5 text-slate-700 font-medium text-sm cursor-pointer"
+              value={window}
+              onChange={(e) => setWindow(Number(e.target.value))}
+            >
+              <option value={3}>Last 3 months (since {monthLabel(3)})</option>
+              <option value={2}>Last 2 months (since {monthLabel(2)})</option>
+              <option value={1}>Last month</option>
             </select>
-            <span className="text-slate-400">to</span>
-            <select className="bg-slate-100 border border-slate-200 rounded-md px-3 py-1.5 text-slate-700 font-medium text-sm cursor-pointer" defaultValue="now">
-              <option value="now">Now</option>
-              <option value="feb-1">Feb 1, 2026</option>
-              <option value="jan-1">Jan 1, 2026</option>
-            </select>
+            <span className="text-slate-400">to now</span>
           </div>
         </div>
-        <TraceFlowDiagram />
+        <TraceFlowDiagram baselineStats={baselineStats} currentStats={currentStats} />
       </Card>
 
       {/* Recent Sessions */}
       <Card>
         <CardHeader title="Recent Sessions" subtitle="Sampled KYC verification sessions with outcomes" />
-        <div className="space-y-3">
+        <div className="divide-y divide-slate-100">
           {allConvs.map((conv) => (
             <ConversationCard key={conv.id} conv={conv} highlightTopic="address-verification-failure" />
           ))}
@@ -156,7 +174,7 @@ export default function AgentBehavior() {
               {isKyc ? 'Escalation analysis, root cause identification, and processing traces' : 'Conversation topics, drift detection, and reasoning traces'}
             </p>
           </div>
-          <Link to="/behavior/trends" className="btn-secondary !bg-white/10 !text-white !border-white/20 hover:!bg-white/20">
+          <Link to="/usage-trends" className="btn-secondary !bg-white/10 !text-white !border-white/20 hover:!bg-white/20">
             View All Trends
           </Link>
         </div>

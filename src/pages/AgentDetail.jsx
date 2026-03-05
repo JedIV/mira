@@ -122,10 +122,10 @@ export default function AgentDetail() {
   const kpiConfig = getAgentKpiConfig(agent.id)
   const bizTimelineData = generateBusinessTimelineData(agent.id)
   const uptimeData = generateUptimeData(agent.id)
-  // Red + thicker line for agents with degrading KPIs
-  const isKpiDegrading = agent.businessImpact === 'red' || agent.businessImpact === 'yellow'
+  // Red + thicker line for agents with behavioral shifts
+  const isShifting = agent.businessImpact === 'red' || agent.businessImpact === 'yellow'
   const bizLines = [
-    { dataKey: kpiConfig.kpiLabel, name: kpiConfig.kpiLabel, color: isKpiDegrading ? '#EF4444' : '#2AB1AC', strokeWidth: isKpiDegrading ? 3 : 2 },
+    { dataKey: kpiConfig.kpiLabel, name: kpiConfig.kpiLabel, color: isShifting ? '#EF4444' : '#2AB1AC', strokeWidth: isShifting ? 3 : 2 },
   ]
   const agentBusinessMetrics = businessMetrics[agent.id] || {}
   const primaryMetricKey = Object.keys(primaryMetricLabels).find((key) => key in agentBusinessMetrics)
@@ -135,8 +135,8 @@ export default function AgentDetail() {
         value: formatBusinessMetric(primaryMetricKey, agentBusinessMetrics[primaryMetricKey]),
       }
     : {
-        label: 'Business KPI',
-        value: agent.businessImpact === 'green' ? 'On target' : agent.businessImpact === 'yellow' ? 'Needs review' : 'At risk',
+        label: 'Behavioral Status',
+        value: agent.businessImpact === 'green' ? 'No shifts detected' : agent.businessImpact === 'yellow' ? 'Shift detected' : 'Significant shift',
       }
 
   const impactColors = {
@@ -255,7 +255,7 @@ export default function AgentDetail() {
 
       {/* AI Insights */}
       {agent.aiInsight && (
-        <Card className="border-l-4 border-l-primary-400">
+        <div className="pl-4 border-l-4 border-l-primary-400 py-1">
           <div className="flex items-start gap-3">
             <div className="p-1.5 bg-primary-50 rounded-lg flex-shrink-0">
               <SparklesIcon className="w-4 h-4 text-primary-600" />
@@ -268,20 +268,20 @@ export default function AgentDetail() {
               <p className="text-sm text-slate-600 leading-relaxed">{agent.aiInsight}</p>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
-      {/* Metric Cards: Business KPI Status, Operational Health, User Access */}
+      {/* Metric Cards: Behavioral Stability, Operational Health, User Access */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Business KPI Status */}
+        {/* Behavioral Stability */}
         <Card>
-          <CardHeader title="Business KPI Status" />
+          <CardHeader title="Behavioral Stability" />
           <div className={`flex items-center gap-3 p-3 rounded-lg border ${impact.bg} ${impact.border}`}>
             <div className={`w-3 h-3 rounded-full ${impact.dot}`} />
             <span className={`text-sm font-medium ${impact.text}`}>
-              {agent.businessImpact === 'green' ? 'On Track' :
-               agent.businessImpact === 'yellow' ? 'Needs Attention' :
-               'Critical'}
+              {agent.businessImpact === 'green' ? 'Stable' :
+               agent.businessImpact === 'yellow' ? 'Shift Detected' :
+               'Significant Shift'}
             </span>
           </div>
           <div className="mt-3">
@@ -351,7 +351,7 @@ export default function AgentDetail() {
       </div>
 
       {/* Uptime Status Bar */}
-      <Card>
+      <div className="border-t border-slate-100 pt-4">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-base font-semibold text-slate-900">Operational Performance</h3>
@@ -380,7 +380,7 @@ export default function AgentDetail() {
             </div>
           ))}
         </div>
-      </Card>
+      </div>
 
       {/* Business Performance Chart */}
       <Card>
@@ -400,7 +400,7 @@ export default function AgentDetail() {
         {/* Performance drop alert for agents with declining KPIs */}
         {agent.id === 'cs-agent-001' && (
           <div className="mb-4 p-4 bg-warning-light border border-warning rounded-lg">
-            <p className="font-medium text-warning-dark">Performance Drop Detected</p>
+            <p className="font-medium text-warning-dark">Behavior Shift Detected</p>
             <p className="text-sm text-warning-dark/80 mt-1">
               Resolution rate dropped from 85% to 78% starting in October. This correlates with a new "no snow" topic pattern detected in behavior analysis.
             </p>
@@ -408,7 +408,7 @@ export default function AgentDetail() {
         )}
         {agent.id === 'kyc-agent-016' && (
           <div className="mb-4 p-4 bg-red-50 border border-red-300 rounded-lg">
-            <p className="font-medium text-red-700">KPI Degradation Detected</p>
+            <p className="font-medium text-red-700">Outcome Shift Detected</p>
             <p className="text-sm text-red-600/80 mt-1">
               Escalation rate climbed from 8% to 23% since September. The agent is routing a disproportionate number of credit applications to manual review, doubling processing time.
             </p>
@@ -424,8 +424,8 @@ export default function AgentDetail() {
       </Card>
 
       {/* Agent Information */}
-      <Card>
-        <CardHeader title="Agent Information" />
+      <div className="pt-2 border-t border-slate-100">
+        <p className="text-base font-semibold text-slate-900 mb-4">Agent Information</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
           <div>
             <p className="text-slate-500">Created</p>
@@ -450,7 +450,7 @@ export default function AgentDetail() {
             </div>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }

@@ -2,24 +2,19 @@ import { Badge } from './Badge'
 
 const impactConfig = {
   green: {
-    label: 'On Track',
+    label: 'Stable',
     variant: 'success',
     dotClass: 'bg-emerald-500',
   },
   yellow: {
-    label: 'Needs Attention',
+    label: 'Shift Detected',
     variant: 'warning',
     dotClass: 'bg-amber-500',
   },
   red: {
-    label: 'Critical',
+    label: 'Significant Shift',
     variant: 'danger',
     dotClass: 'bg-red-500',
-  },
-  gray: {
-    label: 'No KPIs',
-    variant: 'secondary',
-    dotClass: 'bg-slate-400',
   },
 }
 

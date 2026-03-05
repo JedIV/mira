@@ -15,9 +15,9 @@ import avatarImg from '../../assets/avatar.jpg'
 const navigation = [
   { name: 'Overview', href: '/', icon: HomeIcon, end: true },
   { name: 'Inventory', href: '/inventory', icon: ListBulletIcon },
-  { name: 'Operational Health', href: '/performance/technical', icon: HeartPulseIcon },
+  { name: 'Operational Health', href: '/performance/operational', icon: HeartPulseIcon },
   { name: 'Business Impact', href: '/performance/business', icon: CurrencyDollarIcon },
-  { name: 'Behavior', href: '/behavior/trends', icon: ChartBarIcon },
+  { name: 'Usage Trends', href: '/usage-trends', icon: ChartBarIcon },
   { name: 'Governance', href: '/governance', icon: ShieldCheckIcon },
 ]
 

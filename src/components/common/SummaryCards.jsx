@@ -8,10 +8,10 @@ import { Card } from './Card'
  */
 export default function SummaryCards({ items }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {items.map((item) => (
         <Link key={item.key} to={item.linkTo}>
-          <Card className={`border ${item.cardClass} hover:shadow-md transition-shadow cursor-pointer`}>
+          <div className={`bg-white rounded-lg border shadow-card ${item.cardClass} hover:shadow-md transition-shadow cursor-pointer p-5`}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className={`w-2.5 h-2.5 rounded-full ${item.dotClass}`} />
@@ -20,7 +20,7 @@ export default function SummaryCards({ items }) {
               <p className={`text-2xl font-bold ${item.textClass}`}>{item.count.toLocaleString()}</p>
             </div>
             <p className="text-sm text-slate-600">{item.subtitle}</p>
-          </Card>
+          </div>
         </Link>
       ))}
     </div>

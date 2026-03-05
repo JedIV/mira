@@ -6,10 +6,9 @@ import { agentRand } from '../data/prng'
 import { ExclamationTriangleIcon } from '../components/navigation/Icons'
 
 const impactItems = [
-  { key: 'green', label: 'On Track', subtitle: 'Meeting or exceeding targets', cardClass: 'bg-emerald-50 border-emerald-200', textClass: 'text-emerald-700', dotClass: 'bg-emerald-500', count: DISPLAY_IMPACT_COUNTS.green, linkTo: '/inventory?impact=green' },
-  { key: 'yellow', label: 'Needs Attention', subtitle: 'Approaching or missing targets', cardClass: 'bg-amber-50 border-amber-200', textClass: 'text-amber-700', dotClass: 'bg-amber-500', count: DISPLAY_IMPACT_COUNTS.yellow, linkTo: '/inventory?impact=yellow' },
-  { key: 'red', label: 'Critical', subtitle: 'Significantly below targets', cardClass: 'bg-red-50 border-red-200', textClass: 'text-red-700', dotClass: 'bg-red-500', count: DISPLAY_IMPACT_COUNTS.red, linkTo: '/inventory?impact=red' },
-  { key: 'missing', label: 'No KPIs', subtitle: 'Not yet configured', cardClass: 'bg-slate-50 border-slate-200', textClass: 'text-slate-500', dotClass: 'bg-slate-400', count: DISPLAY_IMPACT_COUNTS.missing, linkTo: '/inventory?impact=gray' },
+  { key: 'green', label: 'Stable', subtitle: 'No significant behavioral shifts', cardClass: 'bg-emerald-50 border-emerald-200', textClass: 'text-emerald-700', dotClass: 'bg-emerald-500', count: DISPLAY_IMPACT_COUNTS.green, linkTo: '/inventory?impact=green' },
+  { key: 'yellow', label: 'Shift Detected', subtitle: 'Observable change in behavior', cardClass: 'bg-amber-50 border-amber-200', textClass: 'text-amber-700', dotClass: 'bg-amber-500', count: DISPLAY_IMPACT_COUNTS.yellow, linkTo: '/inventory?impact=yellow' },
+  { key: 'red', label: 'Significant Shift', subtitle: 'Major behavioral change detected', cardClass: 'bg-red-50 border-red-200', textClass: 'text-red-700', dotClass: 'bg-red-500', count: DISPLAY_IMPACT_COUNTS.red, linkTo: '/inventory?impact=red' },
 ]
 
 const primaryMetricConfig = [
@@ -35,7 +34,7 @@ function getPrimaryMetric(agentId, agent) {
     }
   }
 
-  // Generate a plausible KPI value from the agent's domain config
+  // Generate a plausible signal value from the agent's domain config
   const kpiConfig = getAgentKpiConfig(agentId)
   const rand = agentRand(agentId + '-biz-kpi')
   const impact = agent?.businessImpact || 'green'
@@ -81,7 +80,7 @@ export default function BusinessPerformance() {
       <div className="page-header">
         <h1 className="text-2xl font-bold mb-2">Business Impact</h1>
         <p className="text-sm text-slate-300">
-          Each agent is measured against its own business KPIs. Impact status indicates whether an agent is meeting, approaching, or missing its targets.
+          Each agent's behavior is tracked against its own baselines. Impact status indicates whether an agent's outcome distribution is stable, shifting, or significantly changed.
         </p>
       </div>
 
@@ -95,7 +94,7 @@ export default function BusinessPerformance() {
           <div>
             <p className="font-medium text-red-700">Business Risk Alert</p>
             <p className="text-sm text-red-700/85 mt-1">
-              {impactCounts.red.toLocaleString()} agents are missing business targets. Review behavior analysis, run validation tests, and check governance status before the next release.
+              {impactCounts.red.toLocaleString()} agents show significant behavioral shifts. Review behavior analysis, run validation tests, and check governance status before the next release.
             </p>
           </div>
         </div>
@@ -113,7 +112,7 @@ export default function BusinessPerformance() {
                 <th className="py-3 pr-3">Agent</th>
                 <th className="py-3 pr-3">Team</th>
                 <th className="py-3 pr-3">Impact</th>
-                <th className="py-3 pr-3">Primary KPI</th>
+                <th className="py-3 pr-3">Key Signal</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -151,9 +150,9 @@ export default function BusinessPerformance() {
               <tr className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-200">
                 <th className="py-3 pr-3">Team</th>
                 <th className="py-3 pr-3 text-right">Total</th>
-                <th className="py-3 pr-3 text-right">On Track</th>
-                <th className="py-3 pr-3 text-right">Needs Attention</th>
-                <th className="py-3 text-right">Critical</th>
+                <th className="py-3 pr-3 text-right">Stable</th>
+                <th className="py-3 pr-3 text-right">Shift Detected</th>
+                <th className="py-3 text-right">Significant Shift</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

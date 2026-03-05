@@ -9,12 +9,13 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-800 font-sans;
+    @apply text-slate-800 font-sans;
+    background-color: #FEFEF9;
     letter-spacing: -0.011em;
   }
 
   * {
-    @apply border-slate-200;
+    @apply border-slate-300;
   }
 
   h1, h2, h3 {
@@ -47,11 +48,11 @@
   }
 
   .card {
-    @apply bg-white rounded-xl border border-slate-200/80 shadow-card;
+    @apply bg-transparent border border-slate-200/60 shadow-none;
   }
 
   .card-hover {
-    @apply card transition-all duration-200 hover:shadow-card-hover hover:border-slate-300/80;
+    @apply card transition-all duration-200 hover:shadow-card-hover;
   }
 
   .badge {
@@ -113,7 +114,7 @@
 
   /* Page header gradient banner */
   .page-header {
-    @apply relative overflow-hidden rounded-xl p-6 text-white;
+    @apply relative overflow-hidden p-6 text-white;
     background: linear-gradient(135deg, #0C1222 0%, #0E4A49 100%);
   }
 

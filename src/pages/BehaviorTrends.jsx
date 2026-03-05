@@ -126,8 +126,8 @@ export default function BehaviorTrends() {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="page-header">
-        <h1 className="text-2xl font-bold mb-2">Behavior Trends</h1>
-        <p className="text-sm text-slate-300">Topic patterns and behavior drift detected across all agents</p>
+        <h1 className="text-2xl font-bold mb-2">Usage Trends</h1>
+        <p className="text-sm text-slate-300">Topic patterns and user behavior drift detected across all agents</p>
       </div>
 
       {/* Alert Banner */}
@@ -139,7 +139,7 @@ export default function BehaviorTrends() {
           <div>
             <p className="font-semibold text-danger-dark">{driftAlerts.length} Behavior Drift Alerts Detected</p>
             <p className="text-sm text-danger-dark/80 mt-1">
-              <strong>{driftAlerts.length} emerging topics</strong> have been detected across the agent portfolio.
+              <strong>{driftAlerts.length} behavioral shifts</strong> have been detected across the agent portfolio.
               Highest severity: "No Snow" topic at 24% in Customer Service. {driftAlerts.filter(d => d.trend === 'growing').length} alerts are still growing.
             </p>
           </div>
@@ -358,8 +358,8 @@ export default function BehaviorTrends() {
       </Card>
 
       {/* Recommendations */}
-      <Card>
-        <CardHeader title="Recommended Actions" />
+      <div>
+        <p className="text-base font-semibold text-slate-900 mb-3">Recommended Actions</p>
         <div className="space-y-3">
           <div className="flex items-start gap-3 p-3 bg-primary-50 rounded-lg">
             <span className="w-6 h-6 rounded-full bg-primary-500 text-white text-sm flex items-center justify-center flex-shrink-0">1</span>
@@ -383,7 +383,7 @@ export default function BehaviorTrends() {
             </div>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }

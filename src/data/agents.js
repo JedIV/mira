@@ -6,7 +6,7 @@ export const DISPLAY_ACTIVE_AGENTS = 2281
 export const DISPLAY_DEGRADED_AGENTS = 51
 export const DISPLAY_MAINTENANCE_AGENTS = 14
 export const DISPLAY_STATUS_COUNTS = { healthy: 2361, degraded: 51, maintenance: 14, offline: 0 }
-export const DISPLAY_IMPACT_COUNTS = { green: 1711, yellow: 574, red: 23, missing: 118 }
+export const DISPLAY_IMPACT_COUNTS = { green: 1829, yellow: 574, red: 23 }
 
 // Team-level display counts — scaled to reflect the full 2,426 agent portfolio.
 // Self-service teams (Copilot-sourced) dominate. Alphabetical order matches nav.
@@ -60,7 +60,7 @@ const coreAgents = [
     criticality: 'high',
     tags: ['customer-facing', 'tier-1', 'pii-handling'],
     businessImpact: 'yellow',
-    businessImpactLabel: 'Resolution rate declined 7.8% in Q4',
+    businessImpactLabel: 'Resolution rate shifted down 7.8% in Q4',
     aiInsight: 'Customer Service Agent is operational with 78.5% resolution rate, down from 85.2% last quarter. A new recurring topic ("no snow") is affecting response quality. Recommend reviewing behavior analysis and updating knowledge base.',
     operationalHealth: { responseTime: 1200, responseTimeTrend: 'stable', errorRate: 0.3, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 1, dataExposure: 0 },
@@ -81,7 +81,7 @@ const coreAgents = [
     criticality: 'high',
     tags: ['internal', 'real-time', 'compliance-critical'],
     businessImpact: 'green',
-    businessImpactLabel: 'Detection rate at 99.2%, exceeding targets',
+    businessImpactLabel: 'Detection rate stable at 99.2%',
     aiInsight: 'Fraud Detection Agent is performing exceptionally with 99.2% detection rate and 0.01% error rate. Blocked 1,247 fraudulent transactions this month, saving an estimated $2.45M.',
     operationalHealth: { responseTime: 150, responseTimeTrend: 'up', errorRate: 0.01, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -102,7 +102,7 @@ const coreAgents = [
     criticality: 'high',
     tags: ['document-processing', 'decision-support'],
     businessImpact: 'green',
-    businessImpactLabel: 'Processing accuracy at 97.8%',
+    businessImpactLabel: 'Processing accuracy stable at 97.8%',
     aiInsight: 'Loan Processing Agent is steady with 97.8% accuracy. Processing time averages 24 minutes per application. Consider monitoring the higher error rate (0.8%) during peak hours.',
     operationalHealth: { responseTime: 4500, responseTimeTrend: 'stable', errorRate: 0.8, errorRateTrend: 'up' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -123,7 +123,7 @@ const coreAgents = [
     criticality: 'medium',
     tags: ['internal', 'employee-facing'],
     businessImpact: 'green',
-    businessImpactLabel: 'Resolution rate at 82.3%',
+    businessImpactLabel: 'Resolution rate stable at 82.3%',
     aiInsight: 'IT Support Agent is operating well with 82.3% resolution rate and high employee satisfaction (4.4/5). No significant issues detected.',
     operationalHealth: { responseTime: 1800, responseTimeTrend: 'down', errorRate: 0.2, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -144,7 +144,7 @@ const coreAgents = [
     criticality: 'high',
     tags: ['customer-facing', 'kyc', 'compliance'],
     businessImpact: 'green',
-    businessImpactLabel: 'Onboarding completion at 89.2%',
+    businessImpactLabel: 'Onboarding completion stable at 89.2%',
     aiInsight: 'Customer Onboarding Agent is performing well with 89.2% completion rate. Drop-off rate of 10.8% is within acceptable range. KYC verification steps are functioning normally.',
     operationalHealth: { responseTime: 2100, responseTimeTrend: 'stable', errorRate: 0.5, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 2, dataExposure: 1 },
@@ -165,7 +165,7 @@ const coreAgents = [
     criticality: 'high',
     tags: ['advisory', 'financial-planning'],
     businessImpact: 'yellow',
-    businessImpactLabel: 'Portfolio accuracy needs monitoring',
+    businessImpactLabel: 'Portfolio accuracy shift detected',
     aiInsight: 'Investment Advisor Agent shows slightly elevated response times (3.2s avg). Portfolio recommendation accuracy is strong at 94.1% but below the 96% target. Recommend review.',
     operationalHealth: { responseTime: 3200, responseTimeTrend: 'up', errorRate: 0.6, errorRateTrend: 'up' },
     operationalRisks: { securityWarnings: 1, dataExposure: 0 },
@@ -186,7 +186,7 @@ const coreAgents = [
     criticality: 'high',
     tags: ['compliance', 'monitoring', 'aml'],
     businessImpact: 'green',
-    businessImpactLabel: 'All compliance checks passing',
+    businessImpactLabel: 'Compliance behavior stable',
     aiInsight: 'Compliance Monitor Agent is operating at peak performance with 99.95% uptime. All regulatory checks are passing. Zero missed alerts in the past 30 days.',
     operationalHealth: { responseTime: 800, responseTimeTrend: 'stable', errorRate: 0.05, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -207,7 +207,7 @@ const coreAgents = [
     criticality: 'medium',
     tags: ['personalization', 'campaigns'],
     businessImpact: 'green',
-    businessImpactLabel: 'Campaign conversion up 12%',
+    businessImpactLabel: 'Campaign conversion stable, up 12%',
     aiInsight: 'Marketing Personalization Agent is delivering strong results with campaign conversion rates up 12% month-over-month. Error rate of 1.2% is slightly elevated but within tolerance.',
     operationalHealth: { responseTime: 2800, responseTimeTrend: 'stable', errorRate: 1.2, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -228,7 +228,7 @@ const coreAgents = [
     criticality: 'medium',
     tags: ['outbound', 'payment-processing'],
     businessImpact: 'red',
-    businessImpactLabel: 'High error rate affecting collections',
+    businessImpactLabel: 'Significant shift in error rate patterns',
     aiInsight: 'Collections Agent is degraded with 2.8% error rate and 97.5% uptime. Payment reminders are failing for a subset of customers. Immediate investigation recommended.',
     operationalHealth: { responseTime: 3500, responseTimeTrend: 'up', errorRate: 2.8, errorRateTrend: 'up' },
     operationalRisks: { securityWarnings: 3, dataExposure: 1 },
@@ -249,7 +249,7 @@ const coreAgents = [
     criticality: 'low',
     tags: ['internal', 'employee-facing'],
     businessImpact: 'green',
-    businessImpactLabel: 'Employee satisfaction at 4.3/5',
+    businessImpactLabel: 'Employee satisfaction stable at 4.3/5',
     aiInsight: 'HR Assistant Agent is performing steadily. Employee satisfaction remains high at 4.3/5. Low criticality with no significant issues.',
     operationalHealth: { responseTime: 1500, responseTimeTrend: 'stable', errorRate: 0.15, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -270,7 +270,7 @@ const coreAgents = [
     criticality: 'medium',
     tags: ['ocr', 'extraction', 'validation'],
     businessImpact: 'green',
-    businessImpactLabel: 'Extraction accuracy at 98.5%',
+    businessImpactLabel: 'Extraction accuracy stable at 98.5%',
     aiInsight: 'Document Analysis Agent is performing well with 98.5% extraction accuracy. Processing volume is steady at ~200 documents per day.',
     operationalHealth: { responseTime: 2200, responseTimeTrend: 'stable', errorRate: 0.3, errorRateTrend: 'down' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -291,7 +291,7 @@ const coreAgents = [
     criticality: 'low',
     tags: ['scheduling', 'customer-facing'],
     businessImpact: 'green',
-    businessImpactLabel: 'Booking success rate at 95%',
+    businessImpactLabel: 'Booking success rate stable at 95%',
     aiInsight: 'Appointment Scheduler Agent is running smoothly with 95% booking success rate. No significant issues detected.',
     operationalHealth: { responseTime: 900, responseTimeTrend: 'stable', errorRate: 0.1, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -312,7 +312,7 @@ const coreAgents = [
     criticality: 'medium',
     tags: ['reporting', 'analytics', 'scheduled'],
     businessImpact: 'green',
-    businessImpactLabel: 'Reports generated on schedule',
+    businessImpactLabel: 'Report generation behavior stable',
     aiInsight: 'Report Generation Agent is delivering all scheduled reports on time. Coverage includes business and compliance domains with 100% delivery rate.',
     operationalHealth: { responseTime: 5500, responseTimeTrend: 'stable', errorRate: 0.2, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -333,7 +333,7 @@ const coreAgents = [
     criticality: 'low',
     tags: ['surveys', 'nps', 'analytics'],
     businessImpact: 'yellow',
-    businessImpactLabel: 'Under maintenance — feedback collection paused',
+    businessImpactLabel: 'Feedback patterns shifted — under maintenance review',
     aiInsight: 'Customer Feedback Agent is currently in maintenance mode. Feedback collection is paused while v1.0 release is being prepared. Expected back online within 48 hours.',
     operationalHealth: { responseTime: 0, responseTimeTrend: 'stable', errorRate: 0, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -354,7 +354,7 @@ const coreAgents = [
     criticality: 'high',
     tags: ['routing', 'escalation', 'triage'],
     businessImpact: 'green',
-    businessImpactLabel: 'Routing accuracy at 96%',
+    businessImpactLabel: 'Routing accuracy stable at 96%',
     aiInsight: 'Escalation Handler Agent is performing well with 96% routing accuracy. Average escalation handling time is 2.3 minutes. No missed escalations in the past 7 days.',
     operationalHealth: { responseTime: 500, responseTimeTrend: 'stable', errorRate: 0.1, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -375,7 +375,7 @@ const coreAgents = [
     criticality: 'high',
     tags: ['kyc', 'compliance', 'identity-verification', 'credit'],
     businessImpact: 'red',
-    businessImpactLabel: 'Escalation rate 23% vs <10% target — credit processing time doubled',
+    businessImpactLabel: 'Significant shift — escalation rate 8%→23%, processing time doubled',
     aiInsight: 'KYC Verification Agent is operationally healthy but missing critical business targets. Escalation rate has climbed from 8% to 23% over 6 weeks, routing a disproportionate number of credit applications to manual review. Average processing time has doubled from 2.1 to 4.2 days. Customer satisfaction for credit applicants dropped from 4.1 to 3.2. Immediate behavior analysis and model recalibration recommended.',
     operationalHealth: { responseTime: 1100, responseTimeTrend: 'stable', errorRate: 0.2, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
@@ -632,7 +632,7 @@ function generateAgent(template, nameEntry, index) {
   const [name, description] = nameEntry
   const id = `gen-${template.team.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${String(index).padStart(3, '0')}`
   const statuses = ['active', 'active', 'active', 'active', 'active', 'active', 'active', 'active', 'degraded', 'maintenance']
-  const impacts = ['green', 'green', 'green', 'green', 'green', 'yellow', 'yellow', 'red', 'gray']
+  const impacts = ['green', 'green', 'green', 'green', 'green', 'green', 'yellow', 'yellow', 'red']
   const trends = ['stable', 'stable', 'stable', 'up', 'down']
 
   const status = statuses[Math.floor(rand() * statuses.length)]
@@ -650,14 +650,13 @@ function generateAgent(template, nameEntry, index) {
   const lastActive = new Date(Date.now() - lastActiveHours * 3600000)
 
   const impactLabels = {
-    green: 'Operating within targets',
-    yellow: 'Under review',
-    red: 'Requires attention',
-    gray: 'No KPIs configured',
+    green: 'Behavior stable',
+    yellow: 'Shift detected',
+    red: 'Significant shift',
   }
 
   const businessImpactLabel = impactLabels[businessImpact]
-  const aiInsight = `${name} is ${status === 'active' ? 'operational' : status} with ${responseTime}ms average response time and ${errorRate}% error rate. ${businessImpact === 'green' ? 'No significant issues detected.' : businessImpact === 'yellow' ? 'Minor issues noted — recommend monitoring.' : businessImpact === 'gray' ? 'No business KPIs have been configured for this agent.' : 'Critical issues require immediate investigation.'}`
+  const aiInsight = `${name} is ${status === 'active' ? 'operational' : status} with ${responseTime}ms average response time and ${errorRate}% error rate. ${businessImpact === 'green' ? 'Behavior is stable — no significant shifts detected.' : businessImpact === 'yellow' ? 'Behavioral shift detected — recommend monitoring.' : 'Significant behavioral shift requires immediate investigation.'}`
 
   return {
     id,

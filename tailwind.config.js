@@ -7,6 +7,8 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Dataiku foundation
+        paper: '#FEFEF9',
         // Primary - Dataiku Teal
         primary: {
           50: '#EFFEFB',
@@ -49,7 +51,7 @@ export default {
         mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'monospace'],
       },
       boxShadow: {
-        'card': '0 1px 2px rgba(0,0,0,0.04), 0 1px 6px rgba(0,0,0,0.04)',
+        'card': '0 1px 3px rgba(0,0,0,0.06), 0 1px 8px rgba(0,0,0,0.04)',
         'card-hover': '0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)',
         'elevated': '0 10px 40px rgba(0,0,0,0.1)',
       },

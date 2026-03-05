@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Card, StatusBadge, Badge, BusinessImpactBadge } from '../components/common'
+import { StatusBadge, Badge, BusinessImpactBadge } from '../components/common'
 import { agents, platformSources, DISPLAY_TOTAL_AGENTS } from '../data/agents'
 import { formatRelativeTime } from '../utils/formatters'
 import { MagnifyingGlassIcon, DocumentTextIcon } from '../components/navigation/Icons'
@@ -8,8 +8,8 @@ import PlatformLogo from '../components/PlatformLogo'
 import { roles, roleCoversAgent } from '../data/roles'
 
 const statuses = ['all', 'active', 'degraded', 'maintenance', 'offline']
-const impacts = ['all', 'green', 'yellow', 'red', 'gray']
-const impactLabels = { green: 'On Track', yellow: 'Needs Attention', red: 'Critical', gray: 'No KPIs' }
+const impacts = ['all', 'green', 'yellow', 'red']
+const impactLabels = { green: 'Stable', yellow: 'Shift Detected', red: 'Significant Shift' }
 
 function RoleMultiSelect({ selected, onChange }) {
   const [open, setOpen] = useState(false)
@@ -118,7 +118,7 @@ export default function AgentInventory() {
       </div>
 
       {/* Filters */}
-      <Card className="mb-6">
+      <div className="mb-6">
         <div className="flex flex-wrap items-center gap-4">
           {/* Search */}
           <div className="relative flex-1 min-w-[200px]">
@@ -171,17 +171,17 @@ export default function AgentInventory() {
             ))}
           </select>
         </div>
-      </Card>
+      </div>
 
       {/* Results Count */}
       <p className="text-sm text-slate-500 mb-4">
         Showing {Math.min(filteredAgents.length, visibleCount)} of {DISPLAY_TOTAL_AGENTS.toLocaleString()} agents
       </p>
 
-      {/* Agent Cards */}
-      <div className="space-y-3">
+      {/* Agent List */}
+      <div className="card divide-y divide-slate-100">
         {filteredAgents.slice(0, visibleCount).map((agent) => (
-          <Card key={agent.id} hover className="transition-all duration-200 hover:-translate-y-0.5">
+          <div key={agent.id} className="p-5 hover:bg-slate-50/60 transition-colors">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-4">
                 {/* Source Indicator */}
@@ -225,7 +225,7 @@ export default function AgentInventory() {
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
         ))}
       </div>
 

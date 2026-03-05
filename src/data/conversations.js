@@ -2,13 +2,23 @@ import { agentRand, pick, pickN } from './prng'
 import { getDomainContent } from './domainContent'
 import { getAgentById } from './agents'
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Return an ISO timestamp for `daysAgo` days and `hour`:`minute` relative to now */
+function recentTS(daysAgo, hour, minute = 0) {
+  const d = new Date()
+  d.setDate(d.getDate() - daysAgo)
+  d.setHours(hour, minute, 0, 0)
+  return d.toISOString()
+}
+
 // ─── Curated data for demo agents ───────────────────────────────────────────
 
 const curatedConversations = {
   'cs-agent-001': [
     {
       id: 'conv-001',
-      timestamp: '2024-12-06T10:15:00Z',
+      timestamp: recentTS(0, 10, 15),
       channel: 'chat',
       topic: 'account-inquiry',
       sentiment: 'positive',
@@ -31,7 +41,7 @@ const curatedConversations = {
     },
     {
       id: 'conv-002',
-      timestamp: '2024-12-06T11:30:00Z',
+      timestamp: recentTS(0, 11, 30),
       channel: 'chat',
       topic: 'no-snow',
       sentiment: 'frustrated',
@@ -52,7 +62,7 @@ const curatedConversations = {
     },
     {
       id: 'conv-003',
-      timestamp: '2024-12-06T14:22:00Z',
+      timestamp: recentTS(0, 14, 22),
       channel: 'email',
       topic: 'card-services',
       sentiment: 'neutral',
@@ -70,7 +80,7 @@ const curatedConversations = {
     },
     {
       id: 'conv-004',
-      timestamp: '2024-12-05T16:45:00Z',
+      timestamp: recentTS(1, 16, 45),
       channel: 'chat',
       topic: 'no-snow',
       sentiment: 'confused',
@@ -171,210 +181,6 @@ const curatedDriftAlerts = {
     cardAlert: '"Address Verification Failure" (28% of cases) emerged after the v2.0.8 model update in October. Median address confidence dropped from 0.91 to 0.74.',
   },
 }
-
-// Sample processing events for KYC Verification Agent
-curatedConversations['kyc-agent-016'] = [
-  // 1 — Escalated: German passport, address mismatch
-  {
-    id: 'kyc-conv-001',
-    timestamp: '2026-02-14T14:22:00Z',
-    channel: 'api',
-    topic: 'address-verification-failure',
-    sentiment: 'neutral',
-    resolved: true,
-    duration: 4820,
-    messages: [
-      { role: 'user', content: 'Mortgage application $485,000, 15-year fixed. Applicant holds German passport, US resident since 2018.' },
-      { role: 'agent', content: 'Passport (non-US) ✓, proof of income ✓, bank statements ✓. Routed to Non-US Passport Agent. Identity: VERIFIED (96%). Address: FAILED — confidence 0.68. Decision: Escalated to manual review.' },
-    ],
-    reasoning: [
-      { step: 1, thought: 'All required documents present', action: 'Classify and validate documents', confidence: 0.99 },
-      { step: 2, thought: 'Non-US passport detected', action: 'Route to Non-US Passport Agent', confidence: 0.97 },
-      { step: 3, thought: 'Address confidence 0.68 — below 0.85 threshold', action: 'Run address verification', confidence: 0.68 },
-      { step: 4, thought: 'Cannot auto-approve with failed address check', action: 'Escalate to manual review', confidence: 0.62 },
-    ],
-  },
-  // 2 — Approved: US passport, auto loan
-  {
-    id: 'kyc-conv-002',
-    timestamp: '2026-02-14T13:05:00Z',
-    channel: 'api',
-    topic: 'auto-approved',
-    sentiment: 'positive',
-    resolved: true,
-    duration: 3210,
-    messages: [
-      { role: 'user', content: 'Auto loan $22,000, 48-month term. Applicant holds US passport.' },
-      { role: 'agent', content: 'Passport (US) ✓, paystub ✓. Routed to US Passport Agent. Identity: VERIFIED (99%). Address: PASSED (0.94). Decision: Approved.' },
-    ],
-    reasoning: [
-      { step: 1, thought: 'Complete documentation set', action: 'Classify and validate documents', confidence: 0.99 },
-      { step: 2, thought: 'US passport detected', action: 'Route to US Passport Agent', confidence: 0.99 },
-      { step: 3, thought: 'Address confidence 0.94 — above threshold', action: 'Run address verification', confidence: 0.94 },
-      { step: 4, thought: 'All checks passed', action: 'Issue approval', confidence: 0.97 },
-    ],
-  },
-  // 3 — Approved: US passport, credit card
-  {
-    id: 'kyc-conv-003',
-    timestamp: '2026-02-14T11:30:00Z',
-    channel: 'api',
-    topic: 'auto-approved',
-    sentiment: 'positive',
-    resolved: true,
-    duration: 2640,
-    messages: [
-      { role: 'user', content: 'Credit card application, $15,000 limit. Applicant holds US passport, homeowner 8 years at same address.' },
-      { role: 'agent', content: 'Passport (US) ✓, proof of income ✓. Routed to US Passport Agent. Identity: VERIFIED (99%). Address: PASSED (0.97). Decision: Approved.' },
-    ],
-    reasoning: [
-      { step: 1, thought: 'Standard credit card application', action: 'Classify and validate documents', confidence: 0.99 },
-      { step: 2, thought: 'US passport detected', action: 'Route to US Passport Agent', confidence: 0.99 },
-      { step: 3, thought: 'Address confidence 0.97 — long-term residence', action: 'Run address verification', confidence: 0.97 },
-      { step: 4, thought: 'All checks passed', action: 'Issue approval', confidence: 0.98 },
-    ],
-  },
-  // 4 — Escalated: Brazilian passport, recent relocation
-  {
-    id: 'kyc-conv-004',
-    timestamp: '2026-02-14T10:48:00Z',
-    channel: 'api',
-    topic: 'address-verification-failure',
-    sentiment: 'neutral',
-    resolved: true,
-    duration: 5140,
-    messages: [
-      { role: 'user', content: 'HELOC $125,000. Applicant holds Brazilian passport, relocated to US 3 months ago.' },
-      { role: 'agent', content: 'All documents present ✓. Routed to Non-US Passport Agent. Identity: VERIFIED (93%). Address: FAILED — confidence 0.71. Recent address not in postal database. Decision: Escalated to manual review.' },
-    ],
-    reasoning: [
-      { step: 1, thought: 'HELOC — higher documentation standard', action: 'Classify and validate documents', confidence: 0.97 },
-      { step: 2, thought: 'Non-US passport detected', action: 'Route to Non-US Passport Agent', confidence: 0.96 },
-      { step: 3, thought: 'Address confidence 0.71 — recent move', action: 'Run address verification', confidence: 0.71 },
-      { step: 4, thought: 'Address check failed', action: 'Escalate to manual review', confidence: 0.65 },
-    ],
-  },
-  // 5 — Approved: US passport, personal loan
-  {
-    id: 'kyc-conv-005',
-    timestamp: '2026-02-13T16:45:00Z',
-    channel: 'api',
-    topic: 'auto-approved',
-    sentiment: 'positive',
-    resolved: true,
-    duration: 2910,
-    messages: [
-      { role: 'user', content: 'Personal loan $18,000, 36-month term. Applicant holds US passport, employed at same company 4 years.' },
-      { role: 'agent', content: 'Passport (US) ✓, paystub ✓, bank statements ✓. Routed to US Passport Agent. Identity: VERIFIED (98%). Address: PASSED (0.92). Decision: Approved.' },
-    ],
-    reasoning: [
-      { step: 1, thought: 'Complete documentation', action: 'Classify and validate documents', confidence: 0.99 },
-      { step: 2, thought: 'US passport detected', action: 'Route to US Passport Agent', confidence: 0.99 },
-      { step: 3, thought: 'Address confidence 0.92 — above threshold', action: 'Run address verification', confidence: 0.92 },
-      { step: 4, thought: 'All checks passed', action: 'Issue approval', confidence: 0.96 },
-    ],
-  },
-  // 6 — Approved: Canadian passport (non-US but passes)
-  {
-    id: 'kyc-conv-006',
-    timestamp: '2026-02-13T14:12:00Z',
-    channel: 'api',
-    topic: 'auto-approved',
-    sentiment: 'positive',
-    resolved: true,
-    duration: 3450,
-    messages: [
-      { role: 'user', content: 'Auto loan $35,000, 60-month term. Applicant holds Canadian passport, US resident 12 years.' },
-      { role: 'agent', content: 'Passport (non-US) ✓, proof of income ✓. Routed to Non-US Passport Agent. Identity: VERIFIED (97%). Address: PASSED (0.91). Long-term residency confirmed. Decision: Approved.' },
-    ],
-    reasoning: [
-      { step: 1, thought: 'Complete documentation set', action: 'Classify and validate documents', confidence: 0.99 },
-      { step: 2, thought: 'Non-US passport detected', action: 'Route to Non-US Passport Agent', confidence: 0.97 },
-      { step: 3, thought: 'Address confidence 0.91 — above threshold', action: 'Run address verification', confidence: 0.91 },
-      { step: 4, thought: 'All checks passed despite non-US passport', action: 'Issue approval', confidence: 0.95 },
-    ],
-  },
-  // 7 — Approved: US passport, mortgage
-  {
-    id: 'kyc-conv-007',
-    timestamp: '2026-02-13T11:20:00Z',
-    channel: 'api',
-    topic: 'auto-approved',
-    sentiment: 'positive',
-    resolved: true,
-    duration: 3680,
-    messages: [
-      { role: 'user', content: 'Mortgage $320,000, 30-year fixed. Applicant holds US passport, current address 3 years.' },
-      { role: 'agent', content: 'Passport (US) ✓, W-2 ✓, bank statements ✓. Routed to US Passport Agent. Identity: VERIFIED (99%). Address: PASSED (0.95). Decision: Approved.' },
-    ],
-    reasoning: [
-      { step: 1, thought: 'Mortgage — full documentation required', action: 'Classify and validate documents', confidence: 0.99 },
-      { step: 2, thought: 'US passport detected', action: 'Route to US Passport Agent', confidence: 0.99 },
-      { step: 3, thought: 'Address confidence 0.95 — stable residence', action: 'Run address verification', confidence: 0.95 },
-      { step: 4, thought: 'All checks passed', action: 'Issue approval', confidence: 0.98 },
-    ],
-  },
-  // 8 — Escalated: UK passport, address parser issue
-  {
-    id: 'kyc-conv-008',
-    timestamp: '2026-02-13T09:55:00Z',
-    channel: 'api',
-    topic: 'address-verification-failure',
-    sentiment: 'neutral',
-    resolved: true,
-    duration: 3890,
-    messages: [
-      { role: 'user', content: 'Line of credit $40,000. Applicant holds UK passport, existing customer since 2019.' },
-      { role: 'agent', content: 'All documents present ✓. Routed to Non-US Passport Agent. Identity: VERIFIED (98%). Address: FAILED — confidence 0.73. Unit format "Apt 4B" not matching parser. Decision: Escalated to manual review.' },
-    ],
-    reasoning: [
-      { step: 1, thought: 'Existing customer, 5-year history', action: 'Classify and validate documents', confidence: 0.99 },
-      { step: 2, thought: 'Non-US passport detected', action: 'Route to Non-US Passport Agent', confidence: 0.98 },
-      { step: 3, thought: 'Address confidence 0.73 — format mismatch', action: 'Run address verification', confidence: 0.73 },
-      { step: 4, thought: 'Below threshold — escalating despite customer history', action: 'Escalate to manual review', confidence: 0.58 },
-    ],
-  },
-  // 9 — Approved: US passport, HELOC
-  {
-    id: 'kyc-conv-009',
-    timestamp: '2026-02-12T15:30:00Z',
-    channel: 'api',
-    topic: 'auto-approved',
-    sentiment: 'positive',
-    resolved: true,
-    duration: 3100,
-    messages: [
-      { role: 'user', content: 'HELOC $200,000. Applicant holds US passport, property owned outright, same address 15 years.' },
-      { role: 'agent', content: 'Passport (US) ✓, property deed ✓, proof of income ✓. Routed to US Passport Agent. Identity: VERIFIED (99%). Address: PASSED (0.99). Decision: Approved.' },
-    ],
-    reasoning: [
-      { step: 1, thought: 'HELOC with strong documentation', action: 'Classify and validate documents', confidence: 0.99 },
-      { step: 2, thought: 'US passport detected', action: 'Route to US Passport Agent', confidence: 0.99 },
-      { step: 3, thought: 'Address confidence 0.99 — long-term ownership', action: 'Run address verification', confidence: 0.99 },
-      { step: 4, thought: 'All checks passed with highest confidence', action: 'Issue approval', confidence: 0.99 },
-    ],
-  },
-  // 10 — Approved: Indian passport (non-US, passes)
-  {
-    id: 'kyc-conv-010',
-    timestamp: '2026-02-12T10:05:00Z',
-    channel: 'api',
-    topic: 'auto-approved',
-    sentiment: 'positive',
-    resolved: true,
-    duration: 3280,
-    messages: [
-      { role: 'user', content: 'Credit card application, $20,000 limit. Applicant holds Indian passport, US resident 6 years, renting.' },
-      { role: 'agent', content: 'Passport (non-US) ✓, proof of income ✓. Routed to Non-US Passport Agent. Identity: VERIFIED (96%). Address: PASSED (0.88). Decision: Approved.' },
-    ],
-    reasoning: [
-      { step: 1, thought: 'Standard credit card application', action: 'Classify and validate documents', confidence: 0.99 },
-      { step: 2, thought: 'Non-US passport detected', action: 'Route to Non-US Passport Agent', confidence: 0.97 },
-      { step: 3, thought: 'Address confidence 0.88 — above threshold', action: 'Run address verification', confidence: 0.88 },
-      { step: 4, thought: 'All checks passed', action: 'Issue approval', confidence: 0.94 },
-    ],
-  },
-]
 
 // ─── Procedural generators ──────────────────────────────────────────────────
 

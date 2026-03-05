@@ -4,9 +4,9 @@ import { MagnifyingGlassIcon, BellIcon, Cog6ToothIcon } from './Icons'
 const pageTitles = {
   '/': { title: 'Dashboard', subtitle: 'Enterprise agent overview' },
   '/inventory': { title: 'Agent Inventory', subtitle: 'All agents across platforms' },
-  '/performance/technical': { title: 'Technical Performance', subtitle: 'System health and metrics' },
-  '/performance/business': { title: 'Business Performance', subtitle: 'Business outcomes and KPIs' },
-  '/behavior/trends': { title: 'Behavior Trends', subtitle: 'Enterprise-wide patterns' },
+  '/performance/operational': { title: 'Technical Performance', subtitle: 'System health and metrics' },
+  '/performance/business': { title: 'Business Performance', subtitle: 'Outcome shifts and behavioral stability' },
+  '/usage-trends': { title: 'Usage Trends', subtitle: 'Enterprise-wide patterns' },
   '/testing': { title: 'Testing', subtitle: 'Quality assurance and validation' },
   '/governance': { title: 'Governance', subtitle: 'Risk and compliance management' },
 }

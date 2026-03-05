@@ -32,18 +32,18 @@ import {
 
 const dimensions = [
   {
-    name: 'Business KPI Status',
-    description: 'KPI tracking with red/yellow/green status across all agents',
+    name: 'Business Impact',
+    description: 'Behavioral stability and outcome shifts across all agents',
     icon: CurrencyDollarIcon,
     href: '/performance/business',
     color: 'bg-emerald-500',
-    stats: { label: 'On Target', value: '87%' },
+    stats: { label: 'Stable', value: '75%' },
   },
   {
     name: 'Operational Health',
     description: 'Response times, error rates, and uptime across agents',
     icon: ServerStackIcon,
-    href: '/performance/technical',
+    href: '/performance/operational',
     color: 'bg-blue-500',
     stats: { label: 'Avg Uptime', value: '99.7%' },
   },
@@ -122,7 +122,6 @@ const impactDot = {
   green: 'bg-emerald-500',
   yellow: 'bg-amber-400',
   red: 'bg-red-500',
-  gray: 'bg-slate-300',
 }
 
 
@@ -148,18 +147,18 @@ function TopAgentsTable() {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-y border-slate-100">
+            <tr className="border-y border-slate-200">
               <th className="text-left text-[10px] uppercase tracking-wider font-semibold px-6 py-2.5">Agent</th>
               <th className="text-left text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Platform</th>
               <th className="text-left text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Status</th>
-              <th className="text-left text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">KPI</th>
+              <th className="text-left text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Behavior</th>
               <th className="text-right text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Resp. Time</th>
               <th className="text-right text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Error Rate</th>
               <th className="text-right text-[10px] uppercase tracking-wider font-semibold px-3 py-2.5">Usage Trend</th>
               <th className="px-3 py-2.5"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-slate-200">
             {topAgents.map((agent, i) => {
               const platform = platformSources.find(p => p.id === agent.source)
               const sl = statusLabel[agent.status] || statusLabel.active
@@ -269,7 +268,7 @@ function PlatformTile({ source }) {
   return (
     <Link
       to={`/inventory?platform=${source.id}`}
-      className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white border border-slate-200/80 shadow-card hover:shadow-card-hover hover:border-slate-300/80 transition-all group"
+      className="flex items-center gap-3 px-3 py-2.5 bg-transparent border border-slate-200/60 transition-all group"
     >
       <div className="relative flex-shrink-0">
         <PlatformLogo sourceId={source.id} color={source.color} size={28} className="rounded-lg" />
@@ -301,12 +300,12 @@ function StatusBoard() {
   return (
     <div className="card p-0 overflow-hidden">
       {/* Top stats strip — one per sidebar panel */}
-      <div className="grid grid-cols-5 divide-x divide-slate-100 border-b border-slate-100">
+      <div className="grid grid-cols-5 divide-x divide-slate-200 border-b border-slate-200">
         <Link to="/inventory" className="px-4 py-3 text-center hover:bg-slate-50 transition-colors">
           <p className="text-2xl font-bold text-slate-900">{totalAgents.toLocaleString()}</p>
           <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Total Agents</p>
         </Link>
-        <Link to="/performance/technical" className="px-4 py-3 text-center hover:bg-slate-50 transition-colors">
+        <Link to="/performance/operational" className="px-4 py-3 text-center hover:bg-slate-50 transition-colors">
           <div className="flex items-center justify-center gap-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
             <span className="text-lg font-bold text-emerald-600">{DISPLAY_STATUS_COUNTS.healthy.toLocaleString()}</span>
@@ -327,12 +326,10 @@ function StatusBoard() {
             <span className="text-lg font-bold text-amber-600">{DISPLAY_IMPACT_COUNTS.yellow}</span>
             <span className="inline-block w-2 h-2 rounded-full bg-red-500 ml-1" />
             <span className="text-lg font-bold text-red-600">{DISPLAY_IMPACT_COUNTS.red}</span>
-            <span className="inline-block w-2 h-2 rounded-full bg-slate-300 ml-1" />
-            <span className="text-lg font-bold text-slate-400">{DISPLAY_IMPACT_COUNTS.missing}</span>
           </div>
-          <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">KPI Status</p>
+          <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Behavior Status</p>
         </Link>
-        <Link to="/behavior/trends" className="px-4 py-3 text-center hover:bg-slate-50 transition-colors">
+        <Link to="/usage-trends" className="px-4 py-3 text-center hover:bg-slate-50 transition-colors">
           <p className="text-2xl font-bold text-amber-600">7</p>
           <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Behavior Drift</p>
         </Link>
@@ -356,7 +353,7 @@ function StatusBoard() {
           ))}
           <Link
             to="/platforms/add"
-            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 border-dashed border-slate-200 hover:border-primary-400 hover:bg-primary-50/30 transition-all group"
+            className="flex items-center justify-center gap-2 px-3 py-2.5 border-2 border-dashed border-slate-200 hover:border-primary-400 hover:bg-primary-50/30 transition-all group"
           >
             <svg className="w-4 h-4 text-slate-400 group-hover:text-primary-500 transition-colors" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -367,7 +364,7 @@ function StatusBoard() {
       </div>
 
       {/* Live event ticker */}
-      <div className="px-4 py-3 bg-slate-50/80 border-t border-slate-100">
+      <div className="px-4 py-3 bg-slate-50/80 border-t border-slate-200">
         <LiveTicker />
       </div>
     </div>
@@ -383,7 +380,7 @@ export default function Dashboard() {
             <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-1">Dataiku Agent Management</p>
             <h1 className="text-2xl font-bold">Agent Overview</h1>
             <p className="text-sm text-slate-300 mt-2 max-w-2xl">
-              Monitor business KPIs, operational health, and risk across {DISPLAY_TOTAL_AGENTS.toLocaleString()} agents deployed on {platformSources.length} platforms.
+              Monitor behavioral stability, operational health, and risk across {DISPLAY_TOTAL_AGENTS.toLocaleString()} agents deployed on {platformSources.length} platforms.
             </p>
           </div>
         </div>
@@ -401,13 +398,13 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {dimensions.map((dim) => (
             <Link key={dim.name} to={dim.href}>
-              <Card hover className="h-full transition-all duration-200 hover:-translate-y-1">
+              <Card hover className="h-full transition-all duration-200 hover:-translate-y-0.5">
                 <div className={`w-10 h-10 rounded-lg ${dim.color} flex items-center justify-center mb-4`}>
                   <dim.icon className="w-5 h-5 text-white" />
                 </div>
                 <h3 className="font-semibold text-slate-900 mb-1">{dim.name}</h3>
                 <p className="text-sm text-slate-500 mb-4 leading-relaxed">{dim.description}</p>
-                <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                <div className="flex items-center justify-between pt-3 border-t border-slate-200">
                   <div>
                     <p className="text-xs text-slate-400">{dim.stats.label}</p>
                     <p className="text-lg font-bold text-slate-900">{dim.stats.value}</p>
