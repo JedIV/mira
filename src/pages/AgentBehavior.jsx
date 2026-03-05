@@ -111,7 +111,24 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
 
       {/* Decision Flow Analysis */}
       <Card>
-        <CardHeader title="Decision Flow Analysis" subtitle="Application routing since December release, compared to current state" />
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Decision Flow Analysis</h3>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-slate-400">Comparing</span>
+            <select className="bg-slate-100 border border-slate-200 rounded-md px-3 py-1.5 text-slate-700 font-medium text-sm cursor-pointer" defaultValue="dec-1">
+              <option value="dec-1">Dec 1, 2025</option>
+              <option value="nov-1">Nov 1, 2025</option>
+              <option value="oct-1">Oct 1, 2025</option>
+              <option value="sep-1">Sep 1, 2025</option>
+            </select>
+            <span className="text-slate-400">to</span>
+            <select className="bg-slate-100 border border-slate-200 rounded-md px-3 py-1.5 text-slate-700 font-medium text-sm cursor-pointer" defaultValue="now">
+              <option value="now">Now</option>
+              <option value="feb-1">Feb 1, 2026</option>
+              <option value="jan-1">Jan 1, 2026</option>
+            </select>
+          </div>
+        </div>
         <TraceFlowDiagram />
       </Card>
 
