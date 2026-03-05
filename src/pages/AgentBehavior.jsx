@@ -69,7 +69,7 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
 
   return (
     <>
-      {/* Root Cause Alert */}
+      {/* Outcome Shift Alert */}
       {driftAlert && (
         <div className="bg-red-50 border border-red-300 rounded-lg p-4">
           <div className="flex items-start gap-3">
@@ -78,36 +78,11 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
             </div>
             <div>
               <p className="font-semibold text-red-700">Outcome Shift Detected Since December Release</p>
-              <p className="text-sm text-red-600/80 mt-1">Escalation rate has climbed from 8% to 23% since the December deployment. Manual review volumes are up 62% and average processing time has doubled.</p>
-              <p className="text-sm text-red-600/70 mt-1">The shift correlates with increased address verification failures — 72% of escalated cases involve address checks. Review the decision flow below to identify where routing has changed.</p>
+              <p className="text-sm text-red-600/80 mt-1">Escalation rate has climbed from 8% to 23% since the December deployment.</p>
             </div>
           </div>
         </div>
       )}
-
-      {/* Key Findings */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border border-red-200 bg-red-50">
-          <p className="text-xs text-red-600 font-medium">Escalation Rate</p>
-          <p className="text-2xl font-bold text-red-700 mt-1">8% → 23%</p>
-          <p className="text-xs text-red-500 mt-1">Since September</p>
-        </Card>
-        <Card className="border border-red-200 bg-red-50">
-          <p className="text-xs text-red-600 font-medium">Address Check Failures</p>
-          <p className="text-2xl font-bold text-red-700 mt-1">72%</p>
-          <p className="text-xs text-red-500 mt-1">Of all escalated cases</p>
-        </Card>
-        <Card className="border border-amber-200 bg-amber-50">
-          <p className="text-xs text-amber-600 font-medium">Avg Confidence Score</p>
-          <p className="text-2xl font-bold text-amber-700 mt-1">0.91 → 0.74</p>
-          <p className="text-xs text-amber-500 mt-1">Median address match</p>
-        </Card>
-        <Card className="border border-amber-200 bg-amber-50">
-          <p className="text-xs text-amber-600 font-medium">Processing Time</p>
-          <p className="text-2xl font-bold text-amber-700 mt-1">2.1 → 4.2d</p>
-          <p className="text-xs text-amber-500 mt-1">Due to manual queue backlog</p>
-        </Card>
-      </div>
 
       {/* Decision Flow Analysis */}
       <Card>
