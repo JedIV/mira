@@ -49,11 +49,11 @@ function EditModal({ platform, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
       <div
-        className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg animate-fade-in"
+        className="relative bg-white rounded-xl shadow-xl w-full max-w-lg"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-400/90">
           <div className="flex items-center gap-3">
             <PlatformLogo sourceId={platform.id} color={platform.color} size={28} className="rounded-lg" />
             <h2 className="font-bold text-slate-900">{platform.name}</h2>
@@ -72,7 +72,7 @@ function EditModal({ platform, onClose }) {
               key={t}
               onClick={() => setTab(t)}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${
-                tab === t ? 'bg-primary-100 text-primary-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                tab === t ? 'bg-primary-100 text-primary-700' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
               }`}
             >
               {t === 'connection' ? 'Connection Details' : 'Scan Configuration'}
@@ -89,7 +89,7 @@ function EditModal({ platform, onClose }) {
                 <input
                   type="text"
                   defaultValue={`${platform.name} — Production`}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-400/90 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
                 />
               </div>
               <div>
@@ -97,7 +97,7 @@ function EditModal({ platform, onClose }) {
                 <input
                   type="text"
                   defaultValue={platform.endpoint}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-400/90 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
                 />
               </div>
               <div>
@@ -105,7 +105,7 @@ function EditModal({ platform, onClose }) {
                 <input
                   type="password"
                   defaultValue={fields.authDefault}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-400/90 bg-white text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
                 />
               </div>
             </>
@@ -113,7 +113,7 @@ function EditModal({ platform, onClose }) {
 
           {tab === 'scanning' && (
             <>
-              <div className="flex items-start justify-between p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+              <div className="flex items-start justify-between p-4 rounded-lg border border-slate-400/90 bg-slate-100/50">
                 <div className="pr-4">
                   <p className="font-semibold text-slate-900 text-sm">Proactive Scan</p>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
@@ -148,7 +148,7 @@ function EditModal({ platform, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-400/90">
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
@@ -225,23 +225,23 @@ function PlatformCard({ platform }) {
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <p className="text-xs text-slate-400">Agents</p>
+            <p className="text-xs text-slate-500">Agents</p>
             <p className="text-lg font-bold text-slate-900">{agentCount}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400">Last Scan</p>
+            <p className="text-xs text-slate-500">Last Scan</p>
             <p className="text-sm font-medium text-slate-700">{lastScan}</p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between py-3 border-t border-slate-100">
+        <div className="flex items-center justify-between py-3 border-t border-slate-400/90">
           <div className="flex items-center gap-2">
             <ToggleSwitch enabled={proactive} onToggle={() => setProactive(!proactive)} />
             <span className="text-xs text-slate-500">Proactive Scan</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 mt-auto pt-3 border-t border-slate-100">
+        <div className="flex items-center gap-3 mt-auto pt-3 border-t border-slate-400/90">
           <button
             onClick={handleRescan}
             disabled={scanning}
@@ -285,7 +285,7 @@ export default function Platforms() {
         {/* Add Platform CTA */}
         <Link
           to="/platforms/add"
-          className="card flex flex-col items-center justify-center gap-3 p-6 border-2 border-dashed border-slate-200 hover:border-primary-400 hover:bg-primary-50/30 transition-all group min-h-[240px]"
+          className="card flex flex-col items-center justify-center gap-3 p-6 border-2 border-dashed border-slate-400/90 hover:border-primary-400 hover:bg-primary-50/30 transition-colors group min-h-[240px]"
         >
           <div className="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-primary-100 flex items-center justify-center transition-colors">
             <svg className="w-6 h-6 text-slate-400 group-hover:text-primary-500 transition-colors" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">

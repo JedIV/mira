@@ -40,16 +40,16 @@ export default function AgentNavPane() {
   }, [teamGroups, search])
 
   return (
-    <aside className="w-60 bg-white border-r border-slate-200/80 flex flex-col overflow-hidden flex-shrink-0">
+    <aside className="w-60 bg-white border-r border-slate-400/90 flex flex-col overflow-hidden flex-shrink-0">
       {/* Header */}
-      <div className="px-3 py-3 border-b border-slate-100">
-        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Agents</h2>
+      <div className="px-3 py-3 border-b border-slate-400/90">
+        <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Agents</h2>
         <input
           type="text"
           placeholder="Filter agents..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full text-xs px-2.5 py-1.5 rounded-md border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-400 focus:border-primary-400 transition-all"
+          className="w-full text-xs px-2.5 py-1.5 rounded-md border border-slate-400/90 bg-slate-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary-400 focus:border-primary-400 transition-colors"
         />
       </div>
 
@@ -59,7 +59,7 @@ export default function AgentNavPane() {
           <div key={team}>
             <button
               onClick={() => toggleTeam(team)}
-              className="w-full flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider hover:bg-slate-50 transition-colors"
+              className="w-full flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider hover:bg-slate-100 transition-colors"
             >
               <ChevronRightIcon
                 className={`w-3 h-3 transition-transform flex-shrink-0 ${
@@ -67,7 +67,7 @@ export default function AgentNavPane() {
                 }`}
               />
               <span className="truncate">{team}</span>
-              <span className="ml-auto text-slate-300 font-normal normal-case text-[10px]">{displayTeamCounts[team] ?? teamAgents.length}</span>
+              <span className="ml-auto text-slate-400 font-normal normal-case text-[10px]">{displayTeamCounts[team] ?? teamAgents.length}</span>
             </button>
             {!collapsed[team] && (
               <div className="ml-2">
@@ -79,7 +79,7 @@ export default function AgentNavPane() {
                       `flex items-center gap-2 px-3 py-1 text-xs transition-colors rounded-r-md ${
                         isActive || agent.id === agentId
                           ? 'text-primary-700 bg-primary-50 font-semibold border-l-2 border-primary-500'
-                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-2 border-transparent'
+                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 border-l-2 border-transparent'
                       }`
                     }
                   >

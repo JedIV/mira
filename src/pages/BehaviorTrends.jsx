@@ -123,7 +123,7 @@ export default function BehaviorTrends() {
   const [selectedTopic, setSelectedTopic] = useState('no-snow')
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       {/* Header */}
       <div className="page-header">
         <h1 className="text-2xl font-bold mb-2">Usage Trends</h1>
@@ -165,7 +165,7 @@ export default function BehaviorTrends() {
                 <th className="pb-3">First Detected</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-400/90">
               {driftAlerts.map((alert) => (
                 <tr key={alert.id} className={alert.severity === 'high' ? 'bg-danger-light/20' : ''}>
                   <td className="py-3">
@@ -231,7 +231,7 @@ export default function BehaviorTrends() {
             color="#EF4444"
             height={300}
           />
-          <div className="mt-4 p-3 bg-slate-50 rounded-lg text-sm text-slate-600">
+          <div className="mt-4 p-3 bg-slate-100 rounded-lg text-sm text-slate-600">
             First detected in September with 2% of conversations. Growth accelerated through Q4 and continues into 2025, reaching 24% by February.
           </div>
         </Card>
@@ -254,11 +254,11 @@ export default function BehaviorTrends() {
                 <th className="pb-3">Impact</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-400/90">
               {affectedAgents.map((agent) => {
                 const agentData = agents.find(a => a.id === agent.id)
                 return (
-                  <tr key={agent.id} className="hover:bg-slate-50">
+                  <tr key={agent.id} className="hover:bg-slate-100/60">
                     <td className="py-3">
                       <span className="font-medium text-slate-900">{agent.name}</span>
                     </td>
@@ -318,7 +318,7 @@ export default function BehaviorTrends() {
                 <th className="pb-3 text-center">Fraud Detection</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-400/90">
               {enterpriseTopicData.map((topic) => (
                 <tr key={topic.name} className={topic.name === 'No Snow' ? 'bg-danger-light/30' : ''}>
                   <td className="py-3">
@@ -361,22 +361,22 @@ export default function BehaviorTrends() {
       <div>
         <p className="text-base font-semibold text-slate-900 mb-3">Recommended Actions</p>
         <div className="space-y-3">
-          <div className="flex items-start gap-3 p-3 bg-primary-50 rounded-lg">
-            <span className="w-6 h-6 rounded-full bg-primary-500 text-white text-sm flex items-center justify-center flex-shrink-0">1</span>
+          <div className="flex items-start gap-3 p-3 bg-slate-100 rounded-lg">
+            <span className="w-6 h-6 rounded-full bg-slate-600 text-white text-sm flex items-center justify-center flex-shrink-0">1</span>
             <div>
               <p className="font-medium text-slate-900">Update Customer Service Agent Prompt</p>
               <p className="text-sm text-slate-600">Add explicit handling for weather-related off-topic queries to redirect users to banking services.</p>
             </div>
           </div>
-          <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-            <span className="w-6 h-6 rounded-full bg-slate-400 text-white text-sm flex items-center justify-center flex-shrink-0">2</span>
+          <div className="flex items-start gap-3 p-3 bg-slate-100 rounded-lg">
+            <span className="w-6 h-6 rounded-full bg-slate-600 text-white text-sm flex items-center justify-center flex-shrink-0">2</span>
             <div>
               <p className="font-medium text-slate-900">Implement Topic Classifier Update</p>
               <p className="text-sm text-slate-600">Train classifiers to better detect and route off-topic conversations before they reach agents.</p>
             </div>
           </div>
-          <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-            <span className="w-6 h-6 rounded-full bg-slate-400 text-white text-sm flex items-center justify-center flex-shrink-0">3</span>
+          <div className="flex items-start gap-3 p-3 bg-slate-100 rounded-lg">
+            <span className="w-6 h-6 rounded-full bg-slate-600 text-white text-sm flex items-center justify-center flex-shrink-0">3</span>
             <div>
               <p className="font-medium text-slate-900">Monitor for Seasonal Patterns</p>
               <p className="text-sm text-slate-600">Set up alerts for emerging topics that exceed 5% threshold across multiple agents.</p>

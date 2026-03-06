@@ -10,12 +10,12 @@
 
   body {
     @apply text-slate-800 font-sans;
-    background-color: #FEFEF9;
+    background-color: #FFFFFF;
     letter-spacing: -0.011em;
   }
 
   * {
-    @apply border-slate-300;
+    @apply border-slate-400/90;
   }
 
   h1, h2, h3 {
@@ -26,7 +26,7 @@
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2
-           text-sm font-semibold rounded-lg transition-all duration-200
+           text-sm font-semibold rounded-lg transition-colors
            focus:outline-none focus:ring-2 focus:ring-offset-2
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
@@ -38,8 +38,8 @@
   }
 
   .btn-secondary {
-    @apply btn bg-white text-slate-700 border border-slate-200
-           hover:bg-slate-50 hover:border-slate-300 focus:ring-slate-500
+    @apply btn bg-white text-slate-700 border border-slate-400/90
+           hover:bg-slate-100 hover:border-slate-400 focus:ring-slate-500
            shadow-sm;
   }
 
@@ -48,11 +48,16 @@
   }
 
   .card {
-    @apply bg-transparent border border-slate-200/60 shadow-none;
+    @apply border border-slate-400/90 shadow-none;
+    background-color: #FAFAF8;
   }
 
   .card-hover {
-    @apply card transition-all duration-200 hover:bg-white/40;
+    @apply card transition-colors;
+  }
+
+  .card-hover:hover {
+    background-color: #F5F5F3;
   }
 
   .badge {
@@ -76,10 +81,10 @@
   }
 
   .input {
-    @apply w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg
+    @apply w-full px-3 py-2 text-sm bg-white border border-slate-400/90 rounded-lg
            placeholder:text-slate-400
            focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500
-           transition-all duration-200;
+           transition-colors;
   }
 
   .metric-value {
@@ -92,7 +97,7 @@
 
   .nav-item {
     @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
-           text-slate-400 transition-all duration-150
+           text-slate-400 transition-colors
            hover:bg-sidebar-hover hover:text-white;
   }
 

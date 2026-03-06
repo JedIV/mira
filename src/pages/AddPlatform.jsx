@@ -28,7 +28,7 @@ function StepIndicator({ currentStep }) {
             <span className="hidden sm:inline">{label}</span>
           </div>
           {i < steps.length - 1 && (
-            <div className={`w-8 h-px ${i < currentStep ? 'bg-emerald-300' : 'bg-slate-200'}`} />
+            <div className={`w-8 h-px ${i < currentStep ? 'bg-emerald-300' : 'bg-slate-300'}`} />
           )}
         </div>
       ))}
@@ -49,10 +49,10 @@ function StepSelectPlatform({ onSelect, selectedId }) {
             onClick={() => onSelect(p.id)}
             className={`text-left p-4 rounded-xl border-2 transition-all ${
               p.comingSoon
-                ? 'opacity-50 cursor-not-allowed border-slate-100 bg-slate-50'
+                ? 'opacity-50 cursor-not-allowed border-slate-400/90 bg-slate-50'
                 : selectedId === p.id
                   ? 'border-primary-500 bg-primary-50/50 shadow-sm'
-                  : 'border-slate-200 hover:border-slate-300 hover:shadow-sm bg-white'
+                  : 'border-slate-400/90 hover:border-slate-400 hover:shadow-sm bg-white'
             }`}
           >
             <div className="flex items-center gap-3 mb-2">
@@ -91,7 +91,7 @@ function StepConnectionDetails({ platformId }) {
           <input
             type="text"
             defaultValue={`${platform?.name || 'Platform'} — Production`}
-            className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+            className="w-full px-3 py-2 rounded-lg border border-slate-400/90 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
           />
         </div>
 
@@ -100,7 +100,7 @@ function StepConnectionDetails({ platformId }) {
           <input
             type="text"
             defaultValue={fields.endpointDefault}
-            className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+            className="w-full px-3 py-2 rounded-lg border border-slate-400/90 bg-white text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
           />
         </div>
 
@@ -109,7 +109,7 @@ function StepConnectionDetails({ platformId }) {
           <input
             type="password"
             defaultValue={fields.authDefault}
-            className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
+            className="w-full px-3 py-2 rounded-lg border border-slate-400/90 bg-white text-sm text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400"
           />
         </div>
 
@@ -119,7 +119,7 @@ function StepConnectionDetails({ platformId }) {
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               tested
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-400/90'
             }`}
           >
             {tested ? (
@@ -149,7 +149,7 @@ function StepConfigureScan() {
       <p className="text-sm text-slate-500 mb-6">Set up how Dataiku Agent Management discovers and monitors agents on this platform.</p>
 
       <div className="space-y-6">
-        <div className="flex items-start justify-between p-4 rounded-xl border border-slate-200 bg-white">
+        <div className="flex items-start justify-between p-4 rounded-xl border border-slate-400/90 bg-white">
           <div className="pr-4">
             <p className="font-semibold text-slate-900 text-sm">Proactive Scan</p>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
@@ -290,14 +290,14 @@ function StepScanResults({ platformId }) {
         Found {results.length} agent{results.length !== 1 ? 's' : ''}. Select which ones to import into Dataiku Agent Management.
       </p>
 
-      <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+      <div className="border border-slate-400/90 rounded-lg overflow-hidden bg-white">
         {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 border-b border-slate-200">
+        <div className="flex items-center gap-3 px-4 py-3 bg-slate-100 border-b border-slate-400/90">
           <input
             type="checkbox"
             checked={selected.size === results.length}
             onChange={toggleAll}
-            className="w-4 h-4 rounded border-slate-300 text-primary-500 focus:ring-primary-500"
+            className="w-4 h-4 rounded border-slate-400/90 text-primary-500 focus:ring-primary-500"
           />
           <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
             {selected.size} of {results.length} selected
@@ -309,8 +309,8 @@ function StepScanResults({ platformId }) {
           <div
             key={idx}
             onClick={() => toggleAgent(idx)}
-            className={`flex items-center gap-3 px-4 py-3 border-b border-slate-100 last:border-b-0 cursor-pointer transition-colors ${
-              selected.has(idx) ? 'bg-primary-50/30' : 'hover:bg-slate-50'
+            className={`flex items-center gap-3 px-4 py-3 border-b border-slate-400/90 last:border-b-0 cursor-pointer transition-colors ${
+              selected.has(idx) ? 'bg-primary-50/30' : 'hover:bg-slate-100'
             }`}
           >
           <input
@@ -318,7 +318,7 @@ function StepScanResults({ platformId }) {
             checked={selected.has(idx)}
             onClick={(e) => e.stopPropagation()}
             onChange={() => toggleAgent(idx)}
-            className="w-4 h-4 rounded border-slate-300 text-primary-500 focus:ring-primary-500"
+            className="w-4 h-4 rounded border-slate-400/90 text-primary-500 focus:ring-primary-500"
           />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-slate-900">{agent.name}</p>
@@ -375,7 +375,7 @@ export default function AddPlatform() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="page-header">
         <div className="flex items-center gap-2 text-sm text-slate-400 mb-3">
           <Link to="/settings" className="hover:text-slate-200 transition-colors">Platforms</Link>
@@ -403,7 +403,7 @@ export default function AddPlatform() {
 
         {/* Footer with navigation */}
         {step < 3 && (
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-400/90">
             <button
               onClick={() => step === 0 ? navigate('/settings') : setStep(step - 1)}
               className="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"

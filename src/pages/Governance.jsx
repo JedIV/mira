@@ -14,7 +14,7 @@ const pendingCount = approvalWorkflows.filter(w => w.status !== 'approved').leng
 function ApprovalStages({ stages }) {
   return (
     <div className="relative">
-      <div className="absolute left-3 top-6 bottom-6 w-0.5 bg-slate-200" />
+      <div className="absolute left-3 top-6 bottom-6 w-0.5 bg-slate-300" />
       <div className="space-y-3">
         {stages.map((stage) => (
           <div key={stage.team} className="flex items-start gap-3 relative">
@@ -41,7 +41,7 @@ function ApprovalStages({ stages }) {
                 <p className="text-xs text-slate-500">Approved by {stage.approver}</p>
               )}
               {stage.comments && (
-                <p className="text-xs text-slate-600 mt-1 bg-slate-50 p-2 rounded">"{stage.comments}"</p>
+                <p className="text-xs text-slate-600 mt-1 bg-slate-100 p-2 rounded">"{stage.comments}"</p>
               )}
               {stage.status === 'pending' && (
                 <p className="text-xs text-warning mt-1">Awaiting review...</p>
@@ -66,7 +66,7 @@ function WorkflowCard({ workflow }) {
       <ApprovalStages stages={workflow.stages} />
 
       {workflow.changes && (
-        <div className="mt-4 pt-3 border-t border-slate-100">
+        <div className="mt-4 pt-3 border-t border-slate-400/90">
           <p className="text-xs font-medium text-slate-500 mb-2">Changes:</p>
           <div className="flex flex-wrap gap-1.5">
             {workflow.changes.map((change, i) => (
@@ -86,7 +86,7 @@ export default function Governance() {
   const displayedRemaining = showAll ? remainingWorkflows : remainingWorkflows.slice(0, 6)
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       {/* Header */}
       <div className="page-header">
         <h1 className="text-2xl font-bold mb-2">Risk & Governance</h1>
@@ -145,12 +145,12 @@ export default function Governance() {
                   <th className="pb-3">Requested By</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-400/90">
                 {displayedRemaining.map((workflow) => {
                   const approved = workflow.stages.filter(s => s.status === 'approved').length
                   const total = workflow.stages.length
                   return (
-                    <tr key={workflow.id} className="hover:bg-slate-50">
+                    <tr key={workflow.id} className="hover:bg-slate-100/60">
                       <td className="py-3">
                         <span className="font-medium text-slate-900">{workflow.title}</span>
                       </td>
@@ -188,7 +188,7 @@ export default function Governance() {
                               </div>
                             ))}
                           </div>
-                          <span className="text-xs text-slate-400">{approved}/{total}</span>
+                          <span className="text-xs text-slate-500">{approved}/{total}</span>
                         </div>
                       </td>
                       <td className="py-3 text-slate-500 text-xs">{workflow.requestedBy}</td>
@@ -199,7 +199,7 @@ export default function Governance() {
             </table>
           </div>
           {remainingWorkflows.length > 6 && !showAll && (
-            <div className="text-center pt-3 border-t border-slate-100">
+            <div className="text-center pt-3 border-t border-slate-400/90">
               <button
                 onClick={() => setShowAll(true)}
                 className="text-sm text-primary-600 hover:text-primary-700 font-medium"
@@ -219,7 +219,7 @@ export default function Governance() {
             title="Risk Assessment"
             subtitle="Customer Service Agent — Multi-dimensional risk view"
           />
-          <div className="flex items-center gap-4 mb-6 p-4 bg-slate-50 rounded-lg">
+          <div className="flex items-center gap-4 mb-6 p-4 bg-slate-100 rounded-lg">
             <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white text-lg font-bold ${
               agentRisk.overall === 'low' ? 'bg-success' :
               agentRisk.overall === 'medium' ? 'bg-warning' : 'bg-danger'
@@ -285,9 +285,9 @@ export default function Governance() {
                   <th className="pb-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-400/90">
                 {complianceRequirements.map((req) => (
-                  <tr key={req.id} className="hover:bg-slate-50">
+                  <tr key={req.id} className="hover:bg-slate-100/60">
                     <td className="py-3 font-medium text-slate-900">{req.name}</td>
                     <td className="py-3">
                       <Badge

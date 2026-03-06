@@ -26,7 +26,7 @@ export default function Header() {
   }
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
+    <header className="h-16 bg-white border-b border-slate-400/90 flex items-center justify-between px-6">
       <div>
         <h1 className="page-title">{pageInfo.title}</h1>
         <p className="page-subtitle">{pageInfo.subtitle}</p>

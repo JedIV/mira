@@ -26,18 +26,18 @@ function ConversationCard({ conv, highlightTopic }) {
       onClick={() => setExpanded(!expanded)}
     >
       {/* Summary row */}
-      <div className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50/80 transition-colors">
+      <div className="flex items-center gap-3 px-3 py-2 hover:bg-slate-100/60 transition-colors">
         <span className={`text-[10px] font-bold uppercase tracking-wide w-16 flex-shrink-0 ${
           isEscalated ? 'text-red-500' : 'text-emerald-500'
         }`}>{outcomeLabel}</span>
         <span className="text-sm text-slate-600 truncate flex-1">{summary}</span>
-        <span className="text-[11px] text-slate-400 flex-shrink-0">{formatDateTime(conv.timestamp)}</span>
-        <span className={`text-[10px] text-slate-300 transition-transform ${expanded ? 'rotate-90' : ''}`}>▶</span>
+        <span className="text-[11px] text-slate-500 flex-shrink-0">{formatDateTime(conv.timestamp)}</span>
+        <span className={`text-[10px] text-slate-400 transition-transform ${expanded ? 'rotate-90' : ''}`}>▶</span>
       </div>
 
       {/* Expanded: conversation + trace */}
       {expanded && (
-        <div className="px-3 pb-3 ml-[4.5rem] border-t border-slate-100">
+        <div className="px-3 pb-3 ml-[4.5rem] border-t border-slate-400/90">
           <div className="space-y-1.5 pt-2 text-sm">
             {conv.messages.map((msg, i) => (
               <div key={i} className={msg.role === 'user' ? '' : 'pl-4'}>
@@ -49,15 +49,15 @@ function ConversationCard({ conv, highlightTopic }) {
             ))}
           </div>
           {conv.reasoning && (
-            <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Trace</span>
+            <div className="mt-2 pt-2 border-t border-slate-400/90 space-y-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Trace</span>
               {conv.reasoning.map((step) => (
                 <div
                   key={step.step}
                   className={`px-2.5 py-1.5 rounded text-xs ${
                     step.confidence < 0.75
                       ? 'bg-amber-50 text-amber-800'
-                      : 'bg-slate-50 text-slate-600'
+                      : 'bg-slate-100 text-slate-600'
                   }`}
                 >
                   <span className="font-medium">{step.step}.</span> {step.action}
@@ -113,7 +113,7 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
           <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-400">Comparing</span>
             <select
-              className="bg-slate-100 border border-slate-200 rounded-md px-3 py-1.5 text-slate-700 font-medium text-sm cursor-pointer"
+              className="bg-slate-100 border border-slate-400/90 rounded-md px-3 py-1.5 text-slate-700 font-medium text-sm cursor-pointer"
               value={window}
               onChange={(e) => setWindow(Number(e.target.value))}
             >
@@ -130,7 +130,7 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
       {/* Recent Sessions */}
       <Card>
         <CardHeader title="Recent Sessions" subtitle="Sampled KYC verification sessions with outcomes" />
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-slate-400/90">
           {allConvs.map((conv) => (
             <ConversationCard key={conv.id} conv={conv} highlightTopic="address-verification-failure" />
           ))}
@@ -164,7 +164,7 @@ export default function AgentBehavior() {
   const isKyc = agentId === 'kyc-agent-016'
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       {/* Header */}
       <div className="page-header">
         <div className="flex items-center justify-between">
@@ -252,7 +252,7 @@ export default function AgentBehavior() {
                     <th className="pb-3 text-right">Change</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-400/90">
                   {Object.entries(q4Topics).map(([topic, q4Value]) => {
                     const q3Value = q3Topics[topic] || 0
                     const q2Value = q2Topics[topic]

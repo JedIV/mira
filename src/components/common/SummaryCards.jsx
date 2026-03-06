@@ -8,10 +8,10 @@ import { Card } from './Card'
  */
 export default function SummaryCards({ items }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className={`grid grid-cols-1 gap-4 ${items.length >= 4 ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
       {items.map((item) => (
         <Link key={item.key} to={item.linkTo}>
-          <div className={`bg-white rounded-lg border shadow-card ${item.cardClass} hover:shadow-md transition-shadow cursor-pointer p-5`}>
+          <div className={`rounded-lg border ${item.cardClass} hover:shadow-sm transition-shadow cursor-pointer p-5`}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className={`w-2.5 h-2.5 rounded-full ${item.dotClass}`} />

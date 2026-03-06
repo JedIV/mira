@@ -8,7 +8,7 @@ export default {
     extend: {
       colors: {
         // Dataiku foundation
-        paper: '#FEFEF9',
+        paper: '#FFFFFF',
         // Primary - Dataiku Teal
         primary: {
           50: '#EFFEFB',

@@ -14,12 +14,12 @@ const statusItems = [
   { key: 'healthy', label: 'Healthy', subtitle: 'Operating normally', cardClass: 'bg-emerald-50 border-emerald-200', textClass: 'text-emerald-700', dotClass: 'bg-emerald-500', count: DISPLAY_STATUS_COUNTS.healthy, linkTo: '/inventory?status=active' },
   { key: 'degraded', label: 'Degraded', subtitle: 'Performance issues', cardClass: 'bg-amber-50 border-amber-200', textClass: 'text-amber-700', dotClass: 'bg-amber-500', count: DISPLAY_STATUS_COUNTS.degraded, linkTo: '/inventory?status=degraded' },
   { key: 'offline', label: 'Offline', subtitle: 'Unreachable', cardClass: 'bg-red-50 border-red-200', textClass: 'text-red-700', dotClass: 'bg-red-500', count: DISPLAY_STATUS_COUNTS.offline, linkTo: '/inventory?status=offline' },
-  { key: 'maintenance', label: 'Maintenance', subtitle: 'Scheduled downtime', cardClass: 'bg-slate-50 border-slate-200', textClass: 'text-slate-500', dotClass: 'bg-slate-400', count: DISPLAY_STATUS_COUNTS.maintenance, linkTo: '/inventory?status=maintenance' },
+  { key: 'maintenance', label: 'Maintenance', subtitle: 'Scheduled downtime', cardClass: 'bg-slate-50 border-slate-400/90', textClass: 'text-slate-500', dotClass: 'bg-slate-400', count: DISPLAY_STATUS_COUNTS.maintenance, linkTo: '/inventory?status=maintenance' },
 ]
 
 export default function TechnicalPerformance() {
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       {/* Header */}
       <div className="page-header">
         <h1 className="text-2xl font-bold mb-2">Operational Health</h1>
@@ -76,7 +76,7 @@ export default function TechnicalPerformance() {
             xAxisKey="time"
             height={300}
           />
-          <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-3 gap-4">
+          <div className="mt-4 pt-4 border-t border-slate-400/90 grid grid-cols-3 gap-4">
             <div>
               <p className="text-xs text-slate-500">Peak Hour</p>
               <p className="text-lg font-semibold text-slate-900">2:00 PM</p>
@@ -109,9 +109,9 @@ export default function TechnicalPerformance() {
                   <th className="pb-3">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-400/90">
                 {criticalAgents.map((agent) => (
-                  <tr key={agent.id} className="hover:bg-slate-50">
+                  <tr key={agent.id} className="hover:bg-slate-100/60">
                     <td className="py-3">
                       <Link to={`/agents/${agent.id}`} className="text-sm font-medium text-slate-900 hover:text-primary-600">
                         {agent.name}

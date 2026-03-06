@@ -22,10 +22,10 @@ function SessionRow({ session }) {
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="border-b border-slate-100 last:border-0">
+    <div className="border-b border-slate-400/90 last:border-0">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-4 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
+        className="w-full flex items-center gap-4 px-4 py-3 hover:bg-slate-100/60 transition-colors text-left"
       >
         <ChevronRightIcon
           className={`w-4 h-4 text-slate-400 transition-transform flex-shrink-0 ${
@@ -62,7 +62,7 @@ function SessionRow({ session }) {
 
       {expanded && (
         <div className="px-4 pb-4 pl-12">
-          <div className="bg-slate-50 rounded-lg p-4">
+          <div className="bg-slate-100 rounded-lg p-4">
             <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
               Step Trace
             </h4>
@@ -115,7 +115,7 @@ export default function AgentLogs() {
   const failedCount = sessions.filter(s => s.status === 'failed').length
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       {/* Header */}
       <div className="page-header">
         <div className="flex items-center justify-between">
@@ -145,7 +145,7 @@ export default function AgentLogs() {
       {/* Sessions Table */}
       <Card padding={false}>
         {/* Table Header */}
-        <div className="flex items-center gap-4 px-4 py-2.5 border-b border-slate-200 text-xs font-medium text-slate-500 uppercase tracking-wider">
+        <div className="flex items-center gap-4 px-4 py-2.5 border-b border-slate-400/90 text-xs font-medium text-slate-500 uppercase tracking-wider">
           <span className="w-4" />
           <span className="w-40">Timestamp</span>
           <span className="w-20">Status</span>

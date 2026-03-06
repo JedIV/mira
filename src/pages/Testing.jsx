@@ -19,7 +19,7 @@ export default function Testing() {
   const categories = ['all', ...Object.keys(testCategories)]
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       {/* Header */}
       <div className="page-header">
         <h1 className="text-2xl font-bold mb-2">Testing & Validation</h1>
@@ -67,7 +67,7 @@ export default function Testing() {
           />
           <div className="space-y-4">
             {recentUpdates.slice(0, 5).map((update) => (
-              <div key={update.id} className="border-l-2 border-slate-200 pl-4 py-1">
+              <div key={update.id} className="border-l-2 border-slate-400/90 pl-4 py-1">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge
                     variant={
@@ -124,7 +124,7 @@ export default function Testing() {
                 className={`p-4 rounded-lg border ${
                   test.status === 'failed' ? 'border-danger bg-danger-light/30' :
                   test.status === 'warning' ? 'border-warning bg-warning-light/30' :
-                  'border-slate-200 bg-slate-50'
+                  'border-slate-400/90 bg-slate-100'
                 }`}
               >
                 <div className="flex items-start justify-between">
@@ -178,7 +178,7 @@ export default function Testing() {
             const percentage = total > 0 ? Math.round((passed / total) * 100) : 0
 
             return (
-              <div key={key} className="p-4 bg-slate-50 rounded-lg text-center">
+              <div key={key} className="p-4 bg-slate-100 rounded-lg text-center">
                 <p className="text-sm font-medium text-slate-600 mb-2">{label}</p>
                 <p className={`text-2xl font-bold ${
                   percentage === 100 ? 'text-success' :

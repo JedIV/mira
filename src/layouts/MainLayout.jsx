@@ -2,11 +2,9 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Sidebar from '../components/navigation/Sidebar'
 import AgentNavPane from '../components/navigation/AgentNavPane'
 
-const showNavPaneRoutes = ['/inventory', '/agents/']
-
 export default function MainLayout() {
   const location = useLocation()
-  const showNavPane = showNavPaneRoutes.some(route => location.pathname.startsWith(route))
+  const showNavPane = location.pathname === '/inventory'
 
   return (
     <div className="flex h-screen overflow-hidden bg-paper">

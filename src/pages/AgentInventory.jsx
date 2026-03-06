@@ -50,11 +50,11 @@ function RoleMultiSelect({ selected, onChange }) {
         </svg>
       </button>
       {open && (
-        <div className="absolute z-20 mt-1 w-64 bg-white border border-slate-200 rounded-lg shadow-lg py-1 animate-fade-in">
+        <div className="absolute z-20 mt-1 w-64 bg-white border border-slate-400/90 rounded-lg shadow-lg py-1">
           {selected.length > 0 && (
             <button
               onClick={() => onChange([])}
-              className="w-full text-left px-3 py-1.5 text-xs text-primary-600 hover:bg-slate-50 font-medium"
+              className="w-full text-left px-3 py-1.5 text-xs text-primary-600 hover:bg-slate-100 font-medium"
             >
               Clear selection
             </button>
@@ -62,13 +62,13 @@ function RoleMultiSelect({ selected, onChange }) {
           {roles.map((role) => (
             <label
               key={role.id}
-              className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-100 cursor-pointer"
             >
               <input
                 type="checkbox"
                 checked={selected.includes(role.id)}
                 onChange={() => toggle(role.id)}
-                className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                className="rounded border-slate-400/90 text-primary-600 focus:ring-primary-500"
               />
               <span
                 className="w-2 h-2 rounded-full flex-shrink-0"
@@ -108,7 +108,7 @@ export default function AgentInventory() {
   })
 
   return (
-    <div className="animate-fade-in">
+    <div>
       {/* Header */}
       <div className="mb-6 page-header">
         <div>
@@ -179,9 +179,9 @@ export default function AgentInventory() {
       </p>
 
       {/* Agent List */}
-      <div className="card divide-y divide-slate-100">
+      <div className="card divide-y divide-slate-400/90">
         {filteredAgents.slice(0, visibleCount).map((agent) => (
-          <div key={agent.id} className="p-5 hover:bg-slate-50/60 transition-colors">
+          <div key={agent.id} className="p-5 hover:bg-slate-100/60 transition-colors">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-4">
                 {/* Source Indicator */}

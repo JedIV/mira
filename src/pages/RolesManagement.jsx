@@ -25,7 +25,7 @@ function RoleRow({ role }) {
   return (
     <>
       <tr
-        className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors cursor-pointer"
+        className="border-b border-slate-400/90 hover:bg-slate-100/60 transition-colors cursor-pointer"
         onClick={() => setExpanded(!expanded)}
       >
         <td className="py-3 px-3">
@@ -67,7 +67,7 @@ function RoleRow({ role }) {
                   {groups.map((g) => {
                     const status = statusConfig[g.status] || statusConfig.active
                     return (
-                      <tr key={g.groupId} className="border-t border-slate-100">
+                      <tr key={g.groupId} className="border-t border-slate-400/90">
                         <td className="py-2 font-mono text-xs text-slate-600">{g.groupName}</td>
                         <td className="py-2 text-right text-slate-900">{g.userCount}</td>
                         <td className="py-2">
@@ -115,7 +115,7 @@ export default function RolesManagement() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100">
+              <tr className="border-b border-slate-400/90">
                 <th className="text-left py-3 px-3 text-slate-500 font-medium">Role Name</th>
                 <th className="text-left py-3 px-3 text-slate-500 font-medium">Type</th>
                 <th className="text-right py-3 px-3 text-slate-500 font-medium">Groups</th>

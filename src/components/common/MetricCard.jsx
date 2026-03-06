@@ -22,7 +22,7 @@ export function MetricCard({
             <span className={size === 'large' ? 'text-4xl font-extrabold text-slate-900' : 'metric-value'}>
               {value}
             </span>
-            {suffix && <span className="text-lg font-medium text-slate-400">{suffix}</span>}
+            {suffix && <span className="text-lg font-medium text-slate-500">{suffix}</span>}
           </div>
           {trendValue !== null && (
             <div className={`flex items-center gap-1 mt-2.5 text-sm font-semibold ${
@@ -31,13 +31,13 @@ export function MetricCard({
               {isPositiveTrend && <ArrowUpIcon className="w-3.5 h-3.5" />}
               {isNegativeTrend && <ArrowDownIcon className="w-3.5 h-3.5" />}
               <span>{Math.abs(trendValue)}%</span>
-              <span className="text-slate-400 font-normal text-xs ml-0.5">vs last period</span>
+              <span className="text-slate-500 font-normal text-xs ml-0.5">vs last period</span>
             </div>
           )}
         </div>
         {Icon && (
-          <div className="p-2.5 bg-slate-50 rounded-xl">
-            <Icon className="w-5 h-5 text-slate-400" />
+          <div className="p-2.5 bg-slate-100 rounded-xl">
+            <Icon className="w-5 h-5 text-slate-500" />
           </div>
         )}
       </div>

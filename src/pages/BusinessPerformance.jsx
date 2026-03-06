@@ -76,7 +76,7 @@ export default function BusinessPerformance() {
     .slice(0, 10)
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="page-header">
         <h1 className="text-2xl font-bold mb-2">Business Impact</h1>
         <p className="text-sm text-slate-300">
@@ -108,18 +108,18 @@ export default function BusinessPerformance() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-200">
+              <tr className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-400/90">
                 <th className="py-3 pr-3">Agent</th>
                 <th className="py-3 pr-3">Team</th>
                 <th className="py-3 pr-3">Impact</th>
                 <th className="py-3 pr-3">Key Signal</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-400/90">
               {highlightedAgents.map((agent) => {
                 const metric = getPrimaryMetric(agent.id, agent)
                 return (
-                  <tr key={agent.id} className="hover:bg-slate-50">
+                  <tr key={agent.id} className="hover:bg-slate-100/60">
                     <td className="py-3 pr-3">
                       <Link to={`/agents/${agent.id}`} className="group">
                         <p className="font-medium text-slate-900 group-hover:text-primary-600 transition-colors">{agent.name}</p>
@@ -147,7 +147,7 @@ export default function BusinessPerformance() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-200">
+              <tr className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-400/90">
                 <th className="py-3 pr-3">Team</th>
                 <th className="py-3 pr-3 text-right">Total</th>
                 <th className="py-3 pr-3 text-right">Stable</th>
@@ -155,9 +155,9 @@ export default function BusinessPerformance() {
                 <th className="py-3 text-right">Significant Shift</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-400/90">
               {teamImpact.map((row) => (
-                <tr key={row.team} className="hover:bg-slate-50">
+                <tr key={row.team} className="hover:bg-slate-100/60">
                   <td className="py-3 pr-3 font-medium text-slate-900">{row.team}</td>
                   <td className="py-3 pr-3 text-right text-slate-700">{row.total}</td>
                   <td className="py-3 pr-3 text-right text-emerald-600 font-medium">{row.green}</td>

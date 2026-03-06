@@ -11,7 +11,7 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState('platforms')
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       {/* Header */}
       <div className="page-header">
         <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-1">Settings</p>
@@ -22,7 +22,7 @@ export default function Settings() {
       </div>
 
       {/* Tab Strip */}
-      <div className="flex gap-1 border-b border-slate-200">
+      <div className="flex gap-1 border-b border-slate-400/90">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -30,7 +30,7 @@ export default function Settings() {
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.id
                 ? 'border-primary-600 text-primary-600'
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-400/90'
             }`}
           >
             {tab.label}

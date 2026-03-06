@@ -169,7 +169,7 @@ export default function AgentDetail() {
   const trendIcon = (trend) => {
     if (trend === 'up') return <ArrowUpIcon className="w-3 h-3 text-danger" />
     if (trend === 'down') return <ArrowDownIcon className="w-3 h-3 text-success" />
-    return <span className="text-xs text-slate-400">—</span>
+    return <span className="text-xs text-slate-500">—</span>
   }
 
   const formatResponseTime = (ms) => {
@@ -179,7 +179,7 @@ export default function AgentDetail() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       {/* Agent Header */}
       <Card>
         <div className="flex items-start gap-6">
@@ -190,7 +190,7 @@ export default function AgentDetail() {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-2xl font-bold text-slate-900">{agent.name}</h1>
-              <span className="text-sm text-slate-400">v{agent.version}</span>
+              <span className="text-sm text-slate-500">v{agent.version}</span>
               <StatusBadge status={agent.status} />
             </div>
             <p className="text-slate-600 mb-3">{agent.description}</p>
@@ -263,7 +263,7 @@ export default function AgentDetail() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="text-sm font-semibold text-slate-900">AI Insights</h3>
-                <span className="text-xs text-slate-400">Auto-generated</span>
+                <span className="text-xs text-slate-500">Auto-generated</span>
               </div>
               <p className="text-sm text-slate-600 leading-relaxed">{agent.aiInsight}</p>
             </div>
@@ -351,7 +351,7 @@ export default function AgentDetail() {
       </div>
 
       {/* Uptime Status Bar */}
-      <div className="border-t border-slate-100 pt-4">
+      <div className="border-t border-slate-400/90 pt-4">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-base font-semibold text-slate-900">Operational Performance</h3>
@@ -363,11 +363,11 @@ export default function AgentDetail() {
           </div>
         </div>
         <UptimeBar days={uptimeData.days} />
-        <div className="flex items-center justify-between mt-2 text-xs text-slate-400">
+        <div className="flex items-center justify-between mt-2 text-xs text-slate-500">
           <span>{uptimeData.days[0]?.label}</span>
           <span>Today</span>
         </div>
-        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-4 justify-center">
+        <div className="mt-3 pt-3 border-t border-slate-400/90 flex items-center gap-4 justify-center">
           {[
             { label: 'Operational', className: 'bg-emerald-400' },
             { label: 'Minor Issue', className: 'bg-amber-400' },
@@ -424,7 +424,7 @@ export default function AgentDetail() {
       </Card>
 
       {/* Agent Information */}
-      <div className="pt-2 border-t border-slate-100">
+      <div className="pt-2 border-t border-slate-400/90">
         <p className="text-base font-semibold text-slate-900 mb-4">Agent Information</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
           <div>
