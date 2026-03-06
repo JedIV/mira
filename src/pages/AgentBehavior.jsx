@@ -80,6 +80,8 @@ function monthLabel(monthsAgo) {
 
 function KycBehaviorView({ agent, conversations, driftAlert }) {
   const [window, setWindow] = useState(3)
+  const [reviewOpen, setReviewOpen] = useState(false)
+  const [reviewSent, setReviewSent] = useState(null)
 
   const currentStats = useMemo(() => computeFlowStats(februaryTraces), [])
   const baselineStats = useMemo(() => computeFlowStats(tracesByWindow[window]), [window])
@@ -98,9 +100,46 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
             <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold">!</span>
             </div>
-            <div>
-              <p className="font-semibold text-red-700">Outcome Shift Detected Since December Release</p>
-              <p className="text-sm text-red-600/80 mt-1">Escalation rate has climbed from 8% to 23% since the December deployment. Decision flow analysis shows the Non-US Passport sub-agent's behavior has shifted, routing more identities to manual escalation.</p>
+            <div className="flex-1">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-semibold text-red-700">Outcome Shift Detected Since December Release</p>
+                  <p className="text-sm text-red-600/80 mt-1">Escalation rate has climbed from 8% to 23% since the December deployment. Decision flow analysis shows the Non-US Passport sub-agent's behavior has shifted, routing more identities to manual escalation.</p>
+                </div>
+                {!reviewSent && (
+                  <div className="relative flex-shrink-0">
+                    <button
+                      onClick={() => setReviewOpen(!reviewOpen)}
+                      className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      Request Review
+                    </button>
+                    {reviewOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-elevated border border-slate-400/90 py-1 z-50">
+                        <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Send review to</p>
+                        {reviewTeams.map((team) => (
+                          <button
+                            key={team}
+                            className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                            onClick={() => {
+                              setReviewSent(team)
+                              setReviewOpen(false)
+                            }}
+                          >
+                            {team}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {reviewSent && (
+                <div className="mt-3 flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-3 py-2">
+                  <span className="font-bold">&#10003;</span>
+                  Review request sent to <strong>{reviewSent}</strong>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -139,6 +178,14 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
     </>
   )
 }
+
+const reviewTeams = [
+  'KYC Operations',
+  'Model Risk Management',
+  'Compliance & Regulatory',
+  'AI/ML Engineering',
+  'Identity Verification',
+]
 
 export default function AgentBehavior() {
   const { agentId } = useParams()
