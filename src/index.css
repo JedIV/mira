@@ -52,7 +52,7 @@
   }
 
   .card-hover {
-    @apply card transition-all duration-200 hover:shadow-card-hover;
+    @apply card transition-all duration-200 hover:bg-white/40;
   }
 
   .badge {
