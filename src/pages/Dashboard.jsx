@@ -29,6 +29,7 @@ import {
   ChevronRightIcon,
   ServerStackIcon,
 } from '../components/navigation/Icons'
+import agentManagementLogoWhite from '../assets/agent-management-logo-white.png'
 
 const dimensions = [
   {
@@ -377,12 +378,12 @@ export default function Dashboard() {
       <div className="page-header">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-wider text-primary-300 font-semibold mb-1">Dataiku Agent Management</p>
             <h1 className="text-2xl font-bold">Agent Overview</h1>
             <p className="text-sm text-slate-300 mt-2 max-w-2xl">
               Monitor behavioral stability, operational health, and risk across {DISPLAY_TOTAL_AGENTS.toLocaleString()} agents deployed on {platformSources.length} platforms.
             </p>
           </div>
+          <img src={agentManagementLogoWhite} alt="Dataiku Agent Management" className="h-10 opacity-60" />
         </div>
       </div>
 
