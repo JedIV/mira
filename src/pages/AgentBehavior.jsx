@@ -156,11 +156,11 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
               value={window}
               onChange={(e) => setWindow(Number(e.target.value))}
             >
-              <option value={3}>Last 3 months (since {monthLabel(3)})</option>
-              <option value={2}>Last 2 months (since {monthLabel(2)})</option>
+              <option value={3}>3 months ago (since {monthLabel(3)})</option>
+              <option value={2}>2 months ago (since {monthLabel(2)})</option>
               <option value={1}>Last month</option>
             </select>
-            <span className="text-slate-400">to now</span>
+            <span className="text-slate-400">to last 30 days</span>
           </div>
         </div>
         <TraceFlowDiagram baselineStats={baselineStats} currentStats={currentStats} />
@@ -168,7 +168,7 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
 
       {/* Recent Sessions */}
       <Card>
-        <CardHeader title="Recent Sessions" subtitle="Sampled KYC verification sessions with outcomes" />
+        <CardHeader title="Recent Sessions" subtitle="Sampled session traces" />
         <div className="divide-y divide-slate-400/90">
           {allConvs.map((conv) => (
             <ConversationCard key={conv.id} conv={conv} highlightTopic="address-verification-failure" />
@@ -218,7 +218,7 @@ export default function AgentBehavior() {
           <div>
             <h1 className="text-2xl font-bold mb-1">{agent?.name}</h1>
             <p className="text-sm text-slate-300">
-              {isKyc ? 'Escalation analysis, root cause identification, and processing traces' : 'Conversation topics, drift detection, and reasoning traces'}
+              {isKyc ? 'Outcome analysis, root cause identification, and processing traces' : 'Conversation topics, drift detection, and reasoning traces'}
             </p>
           </div>
           <Link to="/usage-trends" className="btn-secondary !bg-white/10 !text-white !border-white/20 hover:!bg-white/20">

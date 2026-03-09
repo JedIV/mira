@@ -376,7 +376,7 @@ const coreAgents = [
     tags: ['kyc', 'compliance', 'identity-verification', 'credit'],
     businessImpact: 'red',
     businessImpactLabel: 'Significant shift — escalation rate 8%→23%, processing time doubled',
-    aiInsight: 'KYC Verification Agent is operationally healthy but missing critical business targets. Escalation rate has climbed from 8% to 23% over 6 weeks, routing a disproportionate number of credit applications to manual review. Average processing time has doubled from 2.1 to 4.2 days. Customer satisfaction for credit applicants dropped from 4.1 to 3.2. Immediate behavior analysis and model recalibration recommended.',
+    aiInsight: 'KYC Verification Agent is operationally healthy but missing critical business targets. Manual Escalation Agent use has climbed from 8% to 23% over 6 weeks, routing a disproportionate number of credit applications to manual review. Average processing time has doubled from 2.1 to 4.2 days. Customer satisfaction for credit applicants dropped from 4.1 to 3.2.',
     operationalHealth: { responseTime: 1100, responseTimeTrend: 'stable', errorRate: 0.2, errorRateTrend: 'stable' },
     operationalRisks: { securityWarnings: 0, dataExposure: 0 },
   },
