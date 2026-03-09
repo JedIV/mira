@@ -383,32 +383,39 @@ export function traceToConversation(trace, index) {
   const isEscalated = meta.outcome === 'manual_escalation'
   const isNonUS = meta.passportType === 'non-US'
 
-  // Build reasoning steps from the span tree
+  // Build reasoning steps matching the Decision Flow diagram nodes exactly
+  const passportAgentName = isNonUS ? 'Non-US Passport Agent' : 'US Passport Agent'
+  const outcomeAgentName = isEscalated ? 'Manual Escalation Agent' : 'Auto-Approval Agent'
+
   const reasoning = [
     {
       step: 1,
-      thought: 'All required documents present',
-      action: 'Classify and validate documents',
+      node: 'KYC Orchestrator',
+      role: 'agent',
+      action: 'Received application, classified documents',
       confidence: 0.99,
     },
     {
       step: 2,
-      thought: `${isNonUS ? 'Non-US' : 'US'} passport detected`,
-      action: `Route to ${isNonUS ? 'Non-US' : 'US'} Passport Agent`,
-      confidence: isNonUS ? 0.97 : 0.99,
+      node: 'Identity Verifier',
+      role: 'tool',
+      action: `Identity verified (${(meta.identityConf * 100).toFixed(0)}%), detected ${isNonUS ? 'non-US' : 'US'} passport`,
+      confidence: meta.identityConf,
     },
     {
       step: 3,
-      thought: isEscalated
-        ? `Address confidence ${meta.addressConf} \u2014 below 0.85 threshold`
-        : `Address confidence ${meta.addressConf} \u2014 above threshold`,
-      action: 'Run address verification',
+      node: passportAgentName,
+      role: 'subagent',
+      action: isEscalated
+        ? `Address confidence ${meta.addressConf} — below 0.85 threshold`
+        : `Address verification passed (${meta.addressConf})`,
       confidence: meta.addressConf,
     },
     {
       step: 4,
-      thought: isEscalated ? 'Cannot auto-approve with failed address check' : 'All checks passed',
-      action: isEscalated ? 'Escalate to manual review' : 'Issue approval',
+      node: outcomeAgentName,
+      role: 'outcome',
+      action: isEscalated ? 'Escalated to manual review' : 'Application approved',
       confidence: meta.decisionConf,
     },
   ]

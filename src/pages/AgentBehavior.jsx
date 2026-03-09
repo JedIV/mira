@@ -51,19 +51,26 @@ function ConversationCard({ conv, highlightTopic }) {
           {conv.reasoning && (
             <div className="mt-2 pt-2 border-t border-slate-400/90 space-y-1">
               <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Trace</span>
-              {conv.reasoning.map((step) => (
-                <div
-                  key={step.step}
-                  className={`px-2.5 py-1.5 rounded text-xs ${
-                    step.confidence < 0.75
-                      ? 'bg-amber-50 text-amber-800'
-                      : 'bg-slate-100 text-slate-600'
-                  }`}
-                >
-                  <span className="font-medium">{step.step}.</span> {step.action}
-                  <span className="ml-1.5 opacity-50">({(step.confidence * 100).toFixed(0)}%)</span>
-                </div>
-              ))}
+              {conv.reasoning.map((step, i) => {
+                const roleColors = {
+                  agent: 'bg-slate-200 text-slate-600',
+                  tool: 'bg-indigo-100 text-indigo-600',
+                  subagent: 'bg-blue-100 text-blue-600',
+                  outcome: 'bg-slate-200 text-slate-600',
+                }
+                return (
+                  <div
+                    key={step.step}
+                    className="flex items-start gap-2 px-2.5 py-1.5 rounded text-xs bg-slate-50"
+                  >
+                    {i > 0 && <span className="text-slate-300 -ml-1 mr-0.5">→</span>}
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide flex-shrink-0 ${roleColors[step.role] || 'bg-slate-200 text-slate-600'}`}>
+                      {step.node}
+                    </span>
+                    <span className="text-slate-600">{step.action}</span>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
@@ -156,8 +163,8 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
               value={window}
               onChange={(e) => setWindow(Number(e.target.value))}
             >
-              <option value={3}>3 months ago (since {monthLabel(3)})</option>
-              <option value={2}>2 months ago (since {monthLabel(2)})</option>
+              <option value={3}>3 months ago ({monthLabel(3)})</option>
+              <option value={2}>2 months ago ({monthLabel(2)})</option>
               <option value={1}>Last month</option>
             </select>
             <span className="text-slate-400">to last 30 days</span>
