@@ -363,6 +363,164 @@ export function generateUptimeData(agentId) {
   return { days, avgUptime }
 }
 
+// KPI target values for each curated agent's primary metric
+export const agentKpiTargets = {
+  'cs-agent-001': 82,
+  'fraud-agent-002': 99,
+  'loan-agent-003': 95,
+  'it-support-004': 80,
+  'onboarding-005': 85,
+  'investment-006': 90,
+  'compliance-007': 99,
+  'marketing-008': 3.0,
+  'collections-009': 70,
+  'kyc-agent-016': 10, // escalation rate — lower is better
+}
+
+// Get the target for any agent
+export function getAgentKpiTarget(agentId) {
+  if (agentKpiTargets[agentId] != null) return agentKpiTargets[agentId]
+  const config = getAgentKpiConfig(agentId)
+  // Generated agents: target is 5% below base
+  return Math.round((config.baseValue * 0.95) * 10) / 10
+}
+
+// Whether lower values are better for this agent's KPI (e.g. escalation rate)
+export function isLowerBetter(agentId) {
+  return agentId === 'kyc-agent-016'
+}
+
+// Get all KPIs for an agent as an array of { label, value, target?, previous?, unit }
+export function getAllAgentKpis(agentId) {
+  const bm = businessMetrics[agentId]
+  if (!bm) {
+    const config = getAgentKpiConfig(agentId)
+    return [{ label: config.kpiLabel, value: config.baseValue, target: getAgentKpiTarget(agentId), unit: '%' }]
+  }
+
+  if (agentId === 'kyc-agent-016') {
+    return [
+      { label: 'Escalation Rate', value: bm.escalationRate, target: bm.escalationTarget, previous: bm.previousEscalationRate, unit: '%', lowerBetter: true },
+      { label: 'Avg Processing Time', value: bm.avgProcessingTime, previous: bm.previousProcessingTime, unit: ' days', lowerBetter: true },
+      { label: 'Customer Satisfaction', value: bm.customerSatisfaction, previous: bm.previousSatisfaction, unit: '/5' },
+      { label: 'Manual Volume Change', value: bm.manualCheckVolumeChange, unit: '%', lowerBetter: true },
+    ]
+  }
+  if (agentId === 'cs-agent-001') {
+    return [
+      { label: 'Resolution Rate', value: bm.resolutionRate, target: 82, previous: bm.previousResolutionRate, unit: '%' },
+      { label: 'Customer Satisfaction', value: bm.customerSatisfaction, previous: bm.previousSatisfaction, unit: '/5' },
+      { label: 'First Contact Resolution', value: bm.firstContactResolution, unit: '%' },
+      { label: 'Escalation Rate', value: bm.escalationRate, unit: '%', lowerBetter: true },
+    ]
+  }
+  if (agentId === 'fraud-agent-002') {
+    return [
+      { label: 'Detection Rate', value: bm.detectionRate, target: 99, unit: '%' },
+      { label: 'False Positive Rate', value: bm.falsePositiveRate, unit: '%', lowerBetter: true },
+      { label: 'Avg Detection Time', value: bm.avgDetectionTime, unit: 's', lowerBetter: true },
+      { label: 'Blocked Transactions', value: bm.blockedTransactions, unit: '' },
+    ]
+  }
+  if (agentId === 'loan-agent-003') {
+    return [
+      { label: 'Accuracy Rate', value: bm.accuracyRate, target: 95, unit: '%' },
+      { label: 'Approval Rate', value: bm.approvalRate, unit: '%' },
+      { label: 'Processing Time', value: bm.avgProcessingTime, unit: 'h', lowerBetter: true },
+      { label: 'Documents Processed', value: bm.documentsProcessed, unit: '' },
+    ]
+  }
+  if (agentId === 'onboarding-005') {
+    return [
+      { label: 'Completion Rate', value: bm.completionRate, target: 85, unit: '%' },
+      { label: 'Avg Onboarding Time', value: bm.avgOnboardingTime, unit: ' min', lowerBetter: true },
+      { label: 'Customers Onboarded', value: bm.customersOnboarded, unit: '' },
+      { label: 'Drop-off Rate', value: bm.dropoffRate, unit: '%', lowerBetter: true },
+    ]
+  }
+  if (agentId === 'it-support-004') {
+    return [
+      { label: 'Resolution Rate', value: bm.resolutionRate, target: 80, unit: '%' },
+      { label: 'Avg Ticket Time', value: bm.avgTicketTime, unit: ' min', lowerBetter: true },
+      { label: 'Tickets Handled', value: bm.ticketsHandled, unit: '' },
+      { label: 'Employee Satisfaction', value: bm.employeeSatisfaction, unit: '/5' },
+    ]
+  }
+
+  // Generic: just return what's available
+  const config = getAgentKpiConfig(agentId)
+  return [{ label: config.kpiLabel, value: config.baseValue, target: getAgentKpiTarget(agentId), unit: '%' }]
+}
+
+// Generate enterprise-wide KPI data (all key agents on one chart)
+export function generateEnterpriseKpiData() {
+  const weeks = weekLabels()
+  const agentConfigs = [
+    { id: 'fraud-agent-002', label: 'Fraud Detection Rate' },
+    { id: 'cs-agent-001', label: 'CS Resolution Rate' },
+    { id: 'loan-agent-003', label: 'Loan Accuracy Rate' },
+    { id: 'kyc-agent-016', label: 'KYC Escalation Rate' },
+    { id: 'onboarding-005', label: 'Onboarding Completion' },
+  ]
+
+  // Generate per-agent timelines
+  const agentData = {}
+  agentConfigs.forEach(({ id }) => {
+    agentData[id] = generateBusinessTimelineData(id)
+  })
+
+  return weeks.map((week, i) => {
+    const point = { week }
+    agentConfigs.forEach(({ id, label }) => {
+      const agentWeek = agentData[id][i]
+      const config = getAgentKpiConfig(id)
+      point[label] = agentWeek[config.kpiLabel]
+    })
+    return point
+  })
+}
+
+// Get KPI status (on-target, approaching, missing) for an agent
+export function getAgentKpiStatus(agentId) {
+  const config = getAgentKpiConfig(agentId)
+  const target = getAgentKpiTarget(agentId)
+  const current = config.baseValue
+  const lower = isLowerBetter(agentId)
+
+  // For curated agents with businessMetrics, use live value
+  const bm = businessMetrics[agentId]
+  let liveValue = current
+  if (bm) {
+    if (agentId === 'kyc-agent-016') liveValue = bm.escalationRate
+    else if (agentId === 'cs-agent-001') liveValue = bm.resolutionRate
+    else if (agentId === 'fraud-agent-002') liveValue = bm.detectionRate
+    else if (agentId === 'loan-agent-003') liveValue = bm.accuracyRate
+    else if (agentId === 'onboarding-005') liveValue = bm.completionRate
+    else if (agentId === 'it-support-004') liveValue = bm.resolutionRate
+  }
+
+  if (lower) {
+    if (liveValue <= target) return 'on-target'
+    if (liveValue <= target * 1.5) return 'approaching'
+    return 'missing'
+  } else {
+    if (liveValue >= target) return 'on-target'
+    if (liveValue >= target * 0.95) return 'approaching'
+    return 'missing'
+  }
+}
+
+// KPI events for KYC agent (timeline of threshold breaches)
+export const kycKpiEvents = [
+  { date: 'Dec 15, 2025', event: 'December model release deployed', type: 'deployment' },
+  { date: 'Dec 28, 2025', event: 'Escalation rate crossed 10% threshold', type: 'breach' },
+  { date: 'Jan 10, 2026', event: 'Processing time exceeded 3-day SLA', type: 'breach' },
+  { date: 'Jan 22, 2026', event: 'CSAT dropped below 3.5 target', type: 'breach' },
+  { date: 'Feb 5, 2026', event: 'Manual check volume +50% vs baseline', type: 'breach' },
+  { date: 'Feb 18, 2026', event: 'Escalation rate reached 20%', type: 'breach' },
+  { date: 'Mar 1, 2026', event: 'Escalation rate peaked at 23%', type: 'breach' },
+]
+
 // Critical agents with their status
 export const criticalAgents = [
   { id: 'fraud-agent-002', name: 'Fraud Detection', uptime: 99.99, responseTime: 0.15, errorRate: 0.01, status: 'healthy' },

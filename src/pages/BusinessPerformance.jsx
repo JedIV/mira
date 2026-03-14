@@ -1,14 +1,21 @@
 import { Link } from 'react-router-dom'
 import { Card, CardHeader, Badge, BusinessImpactBadge, SummaryCards } from '../components/common'
+import { useDemoMode } from '../contexts/DemoModeContext'
 import { agents, displayTeamCounts, DISPLAY_IMPACT_COUNTS } from '../data/agents'
 import { businessMetrics, getAgentKpiConfig } from '../data/metrics'
 import { agentRand } from '../data/prng'
 import { ExclamationTriangleIcon } from '../components/navigation/Icons'
 
-const impactItems = [
+const behaviorImpactItems = [
   { key: 'green', label: 'Stable', subtitle: 'No significant behavioral shifts', cardClass: 'bg-emerald-50 border-emerald-200', textClass: 'text-emerald-700', dotClass: 'bg-emerald-500', count: DISPLAY_IMPACT_COUNTS.green, linkTo: '/inventory?impact=green' },
   { key: 'yellow', label: 'Shift Detected', subtitle: 'Observable change in behavior', cardClass: 'bg-amber-50 border-amber-200', textClass: 'text-amber-700', dotClass: 'bg-amber-500', count: DISPLAY_IMPACT_COUNTS.yellow, linkTo: '/inventory?impact=yellow' },
   { key: 'red', label: 'Significant Shift', subtitle: 'Major behavioral change detected', cardClass: 'bg-red-50 border-red-200', textClass: 'text-red-700', dotClass: 'bg-red-500', count: DISPLAY_IMPACT_COUNTS.red, linkTo: '/inventory?impact=red' },
+]
+
+const kpiImpactItems = [
+  { key: 'green', label: 'On Target', subtitle: 'KPI meets or exceeds defined target', cardClass: 'bg-emerald-50 border-emerald-200', textClass: 'text-emerald-700', dotClass: 'bg-emerald-500', count: DISPLAY_IMPACT_COUNTS.green, linkTo: '/inventory?impact=green' },
+  { key: 'yellow', label: 'Approaching Target', subtitle: 'KPI within 5% of target threshold', cardClass: 'bg-amber-50 border-amber-200', textClass: 'text-amber-700', dotClass: 'bg-amber-500', count: DISPLAY_IMPACT_COUNTS.yellow, linkTo: '/inventory?impact=yellow' },
+  { key: 'red', label: 'Missing Target', subtitle: 'KPI below defined target', cardClass: 'bg-red-50 border-red-200', textClass: 'text-red-700', dotClass: 'bg-red-500', count: DISPLAY_IMPACT_COUNTS.red, linkTo: '/inventory?impact=red' },
 ]
 
 const primaryMetricConfig = [
@@ -48,6 +55,9 @@ function getPrimaryMetric(agentId, agent) {
 }
 
 export default function BusinessPerformance() {
+  const { demoMode } = useDemoMode()
+  const isKpi = demoMode === 'kpi'
+  const impactItems = isKpi ? kpiImpactItems : behaviorImpactItems
   // Display counts reflect full 2,426-agent portfolio scale
   const impactCounts = DISPLAY_IMPACT_COUNTS
   // Real agent filter (for table and alert logic)
@@ -80,7 +90,9 @@ export default function BusinessPerformance() {
       <div className="page-header">
         <h1 className="text-2xl font-bold mb-2">Business Impact</h1>
         <p className="text-sm text-slate-300">
-          Each agent's behavior is tracked against its own baselines. Impact status indicates whether an agent's outcome distribution is stable, shifting, or significantly changed.
+          {isKpi
+            ? 'Each agent is measured against customer-defined KPI targets. Status indicates whether an agent is on target, approaching, or missing its performance goals.'
+            : 'Each agent\'s behavior is tracked against its own baselines. Impact status indicates whether an agent\'s outcome distribution is stable, shifting, or significantly changed.'}
         </p>
       </div>
 
@@ -92,9 +104,11 @@ export default function BusinessPerformance() {
             <ExclamationTriangleIcon className="w-4 h-4 text-red-600" />
           </div>
           <div>
-            <p className="font-medium text-red-700">Business Risk Alert</p>
+            <p className="font-medium text-red-700">{isKpi ? 'KPI Performance Alert' : 'Business Risk Alert'}</p>
             <p className="text-sm text-red-700/85 mt-1">
-              {impactCounts.red.toLocaleString()} agents show significant behavioral shifts. Review behavior analysis, run validation tests, and check governance status before the next release.
+              {isKpi
+                ? `${impactCounts.red.toLocaleString()} agents are missing their KPI targets. Review KPI trends, investigate root causes, and adjust targets or agent configuration.`
+                : `${impactCounts.red.toLocaleString()} agents show significant behavioral shifts. Review behavior analysis, run validation tests, and check governance status before the next release.`}
             </p>
           </div>
         </div>
@@ -102,8 +116,8 @@ export default function BusinessPerformance() {
 
       <Card>
         <CardHeader
-          title="Agents Requiring Attention"
-          subtitle="Sorted by impact severity — click through to investigate"
+          title={isKpi ? 'Agents Below Target' : 'Agents Requiring Attention'}
+          subtitle={isKpi ? 'Sorted by KPI gap — click through to investigate' : 'Sorted by impact severity — click through to investigate'}
         />
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -143,16 +157,19 @@ export default function BusinessPerformance() {
       </Card>
 
       <Card>
-        <CardHeader title="Impact by Team" subtitle="Teams with the most agents needing attention" />
+        <CardHeader
+          title={isKpi ? 'KPI Status by Team' : 'Impact by Team'}
+          subtitle={isKpi ? 'Teams with the most agents below target' : 'Teams with the most agents needing attention'}
+        />
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs font-medium text-slate-500 uppercase tracking-wider border-b border-slate-400/90">
                 <th className="py-3 pr-3">Team</th>
                 <th className="py-3 pr-3 text-right">Total</th>
-                <th className="py-3 pr-3 text-right">Stable</th>
-                <th className="py-3 pr-3 text-right">Shift Detected</th>
-                <th className="py-3 text-right">Significant Shift</th>
+                <th className="py-3 pr-3 text-right">{isKpi ? 'On Target' : 'Stable'}</th>
+                <th className="py-3 pr-3 text-right">{isKpi ? 'Approaching' : 'Shift Detected'}</th>
+                <th className="py-3 text-right">{isKpi ? 'Missing' : 'Significant Shift'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-400/90">

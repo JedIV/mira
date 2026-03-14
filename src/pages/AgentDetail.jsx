@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Card, CardHeader, StatusBadge, BusinessImpactBadge } from '../components/common'
 import { MultiLineChart } from '../components/charts'
+import { useDemoMode } from '../contexts/DemoModeContext'
 import { getAgentById, platformSources } from '../data/agents'
 import { agentRand } from '../data/prng'
 import { getAgentPlatformUrl } from '../data/platforms'
-import { generateBusinessTimelineData, generateUptimeData, getAgentKpiConfig, businessMetrics } from '../data/metrics'
+import { generateBusinessTimelineData, generateUptimeData, getAgentKpiConfig, getAgentKpiTarget, getAgentKpiStatus, businessMetrics } from '../data/metrics'
 import { formatPercent } from '../utils/formatters'
 import PlatformLogo from '../components/PlatformLogo'
 import {
@@ -112,6 +113,8 @@ function RequestReviewButton({ variant }) {
 
 export default function AgentDetail() {
   const { agentId } = useParams()
+  const { demoMode } = useDemoMode()
+  const isKpi = demoMode === 'kpi'
   const agent = getAgentById(agentId)
 
   if (!agent) {
@@ -240,7 +243,7 @@ export default function AgentDetail() {
               to={`/agents/${agent.id}/behavior`}
               className="btn-primary text-sm"
             >
-              View Behavior
+              {isKpi ? 'View KPIs' : 'View Behavior'}
             </Link>
             <Link
               to={`/agents/${agent.id}/logs`}
@@ -285,15 +288,19 @@ export default function AgentDetail() {
 
       {/* Metric Cards: Behavioral Stability, Operational Health, User Access */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Behavioral Stability */}
+        {/* Behavioral Stability / KPI Status */}
         <Card>
-          <CardHeader title="Behavioral Stability" />
+          <CardHeader title={isKpi ? 'KPI Status' : 'Behavioral Stability'} />
           <div className={`flex items-center gap-3 p-3 rounded-lg border ${impact.bg} ${impact.border}`}>
             <div className={`w-3 h-3 rounded-full ${impact.dot}`} />
             <span className={`text-sm font-medium ${impact.text}`}>
-              {agent.businessImpact === 'green' ? 'Stable' :
-               agent.businessImpact === 'yellow' ? 'Shift Detected' :
-               'Significant Shift'}
+              {isKpi
+                ? (agent.businessImpact === 'green' ? 'On Target' :
+                   agent.businessImpact === 'yellow' ? 'Approaching Target' :
+                   'Missing Target')
+                : (agent.businessImpact === 'green' ? 'Stable' :
+                   agent.businessImpact === 'yellow' ? 'Shift Detected' :
+                   'Significant Shift')}
             </span>
           </div>
           <div className="mt-3">
@@ -404,7 +411,7 @@ export default function AgentDetail() {
               to={`/agents/${agent.id}/behavior`}
               className="text-sm text-primary-600 hover:text-primary-700 flex items-center gap-1"
             >
-              Investigate Behavior <ChevronRightIcon className="w-4 h-4" />
+              {isKpi ? 'View KPI Detail' : 'Investigate Behavior'} <ChevronRightIcon className="w-4 h-4" />
             </Link>
           }
         />
@@ -412,17 +419,21 @@ export default function AgentDetail() {
         {/* Performance drop alert for agents with declining KPIs */}
         {agent.id === 'cs-agent-001' && (
           <div className="mb-4 p-4 bg-warning-light border border-warning rounded-lg">
-            <p className="font-medium text-warning-dark">Behavior Shift Detected</p>
+            <p className="font-medium text-warning-dark">{isKpi ? 'KPI Decline Detected' : 'Behavior Shift Detected'}</p>
             <p className="text-sm text-warning-dark/80 mt-1">
-              Resolution rate dropped from 85% to 78% starting in October. This correlates with a new "no snow" topic pattern detected in behavior analysis.
+              {isKpi
+                ? 'Resolution rate dropped from 85% to 78% starting in October. This agent is trending below its 82% KPI target.'
+                : 'Resolution rate dropped from 85% to 78% starting in October. This correlates with a new "no snow" topic pattern detected in behavior analysis.'}
             </p>
           </div>
         )}
         {agent.id === 'kyc-agent-016' && (
           <div className="mb-4 p-4 bg-red-50 border border-red-300 rounded-lg">
-            <p className="font-medium text-red-700">Outcome Shift Detected</p>
+            <p className="font-medium text-red-700">{isKpi ? 'KPI Target Breach' : 'Outcome Shift Detected'}</p>
             <p className="text-sm text-red-600/80 mt-1">
-              Escalation rate climbed from 8% to 23% since September. The agent is routing a disproportionate number of credit applications to manual review, doubling processing time.
+              {isKpi
+                ? 'Escalation rate climbed from 8% to 23%, well above the 10% target. Processing time has doubled to 4.2 days, breaching the 3-day SLA.'
+                : 'Escalation rate climbed from 8% to 23% since September. The agent is routing a disproportionate number of credit applications to manual review, doubling processing time.'}
             </p>
           </div>
         )}

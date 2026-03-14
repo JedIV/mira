@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardHeader } from '../components/common'
+import { useDemoMode } from '../contexts/DemoModeContext'
 import { agents, platformSources, DISPLAY_TOTAL_AGENTS, DISPLAY_STATUS_COUNTS, DISPLAY_IMPACT_COUNTS } from '../data/agents'
 
 // Scale degraded counts per platform to match DISPLAY_STATUS_COUNTS.degraded (51 total)
@@ -31,7 +32,7 @@ import {
 } from '../components/navigation/Icons'
 import agentManagementLogoWhite from '../assets/agent-management-logo-white.png'
 
-const dimensions = [
+const behaviorDimensions = [
   {
     name: 'Business Impact',
     description: 'Behavioral stability and outcome shifts across all agents',
@@ -55,6 +56,49 @@ const dimensions = [
     href: '/agents/cs-agent-001/behavior',
     color: 'bg-primary-500',
     stats: { label: 'Drift Alerts', value: '7' },
+  },
+  {
+    name: 'Testing',
+    description: 'Validation results for prompts, data, and guardrails',
+    icon: BeakerIcon,
+    href: '/testing',
+    color: 'bg-amber-500',
+    stats: { label: 'Pass Rate', value: '87%' },
+  },
+  {
+    name: 'Risk & Governance',
+    description: 'Compliance status, approvals, and risk assessments',
+    icon: ShieldCheckIcon,
+    href: '/governance',
+    color: 'bg-rose-500',
+    stats: { label: 'Pending', value: '12' },
+  },
+]
+
+const kpiDimensions = [
+  {
+    name: 'Business Impact',
+    description: 'Behavioral stability and outcome shifts across all agents',
+    icon: CurrencyDollarIcon,
+    href: '/performance/business',
+    color: 'bg-emerald-500',
+    stats: { label: 'Stable', value: '75%' },
+  },
+  {
+    name: 'Operational Health',
+    description: 'Response times, error rates, and uptime across agents',
+    icon: ServerStackIcon,
+    href: '/performance/operational',
+    color: 'bg-blue-500',
+    stats: { label: 'Avg Uptime', value: '99.7%' },
+  },
+  {
+    name: 'KPI Analysis',
+    description: 'Customer-defined metrics, performance targets, and trend analysis',
+    icon: ChatBubbleLeftRightIcon,
+    href: '/agents/cs-agent-001/behavior',
+    color: 'bg-primary-500',
+    stats: { label: 'Below Target', value: '23' },
   },
   {
     name: 'Testing',
@@ -291,8 +335,13 @@ function PlatformTile({ source }) {
   )
 }
 
+// KPI mode display counts (scaled to 2,426 portfolio)
+const DISPLAY_KPI_COUNTS = { onTarget: 1829, approaching: 574, missing: 23 }
+
 function StatusBoard() {
   const [importedExtra, setImportedExtra] = useState(getImportedCount)
+  const { demoMode } = useDemoMode()
+  const isKpi = demoMode === 'kpi'
 
   useEffect(() => onImportedCountChange(setImportedExtra), [])
 
@@ -322,17 +371,17 @@ function StatusBoard() {
         <Link to="/performance/business" className="px-4 py-3 text-center hover:bg-slate-100/60 transition-colors">
           <div className="flex items-center justify-center gap-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-lg font-bold text-emerald-600">{DISPLAY_IMPACT_COUNTS.green.toLocaleString()}</span>
+            <span className="text-lg font-bold text-emerald-600">{isKpi ? DISPLAY_KPI_COUNTS.onTarget.toLocaleString() : DISPLAY_IMPACT_COUNTS.green.toLocaleString()}</span>
             <span className="inline-block w-2 h-2 rounded-full bg-amber-400 ml-1" />
-            <span className="text-lg font-bold text-amber-600">{DISPLAY_IMPACT_COUNTS.yellow}</span>
+            <span className="text-lg font-bold text-amber-600">{isKpi ? DISPLAY_KPI_COUNTS.approaching : DISPLAY_IMPACT_COUNTS.yellow}</span>
             <span className="inline-block w-2 h-2 rounded-full bg-red-500 ml-1" />
-            <span className="text-lg font-bold text-red-600">{DISPLAY_IMPACT_COUNTS.red}</span>
+            <span className="text-lg font-bold text-red-600">{isKpi ? DISPLAY_KPI_COUNTS.missing : DISPLAY_IMPACT_COUNTS.red}</span>
           </div>
-          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">Behavior Status</p>
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">{isKpi ? 'KPI Status' : 'Behavior Status'}</p>
         </Link>
         <Link to="/usage-trends" className="px-4 py-3 text-center hover:bg-slate-100/60 transition-colors">
-          <p className="text-2xl font-bold text-amber-600">7</p>
-          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">Behavior Drift</p>
+          <p className="text-2xl font-bold text-amber-600">{isKpi ? '23' : '7'}</p>
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-medium">{isKpi ? 'KPI Alerts' : 'Behavior Drift'}</p>
         </Link>
         <Link to="/governance" className="px-4 py-3 text-center hover:bg-slate-100/60 transition-colors">
           <p className="text-2xl font-bold text-slate-900">12</p>
@@ -373,6 +422,9 @@ function StatusBoard() {
 }
 
 export default function Dashboard() {
+  const { demoMode } = useDemoMode()
+  const dimensions = demoMode === 'kpi' ? kpiDimensions : behaviorDimensions
+
   return (
     <div className="space-y-6">
       <div className="page-header">

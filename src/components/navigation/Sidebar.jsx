@@ -9,6 +9,7 @@ import {
   Cog6ToothIcon,
   HomeIcon,
 } from './Icons'
+import { useDemoMode } from '../../contexts/DemoModeContext'
 import dataikuLogo from '../../assets/dataiku-bird-white.svg'
 import avatarImg from '../../assets/avatar.jpg'
 
@@ -17,7 +18,7 @@ const navigation = [
   { name: 'Inventory', href: '/inventory', icon: ListBulletIcon },
   { name: 'Operational Health', href: '/performance/operational', icon: HeartPulseIcon },
   { name: 'Business Impact', href: '/performance/business', icon: CurrencyDollarIcon },
-  { name: 'Usage Trends', href: '/usage-trends', icon: ChartBarIcon },
+  { name: 'Usage Trends', kpiName: 'KPI Trends', href: '/usage-trends', icon: ChartBarIcon },
   { name: 'Governance', href: '/governance', icon: ShieldCheckIcon },
 ]
 
@@ -67,6 +68,9 @@ function UserMenu() {
 }
 
 export default function Sidebar() {
+  const { demoMode } = useDemoMode()
+  const isKpi = demoMode === 'kpi'
+
   return (
     <aside className="w-16 bg-sidebar flex flex-col items-center py-4 flex-shrink-0 border-r border-white/[0.06]">
       {/* Logo + Tenant */}
@@ -80,26 +84,29 @@ export default function Sidebar() {
 
       {/* Navigation Icons */}
       <nav className="flex-1 flex flex-col items-center gap-1">
-        {navigation.map((item) => (
-          <div key={item.name} className="relative group">
-            <NavLink
-              to={item.href}
-              end={item.end}
-              className={({ isActive }) =>
-                `w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-150 ${
-                  isActive
-                    ? 'bg-primary-500/20 text-primary-300'
-                    : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.06]'
-                }`
-              }
-            >
-              <item.icon className="w-5 h-5" />
-            </NavLink>
-            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 text-white text-xs font-medium rounded-md whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 shadow-lg border border-white/10 z-50">
-              {item.name}
+        {navigation.map((item) => {
+          const label = isKpi && item.kpiName ? item.kpiName : item.name
+          return (
+            <div key={item.name} className="relative group">
+              <NavLink
+                to={item.href}
+                end={item.end}
+                className={({ isActive }) =>
+                  `w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-150 ${
+                    isActive
+                      ? 'bg-primary-500/20 text-primary-300'
+                      : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.06]'
+                  }`
+                }
+              >
+                <item.icon className="w-5 h-5" />
+              </NavLink>
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2.5 py-1 bg-slate-900 text-white text-xs font-medium rounded-md whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 shadow-lg border border-white/10 z-50">
+                {label}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </nav>
 
       {/* Bottom: Settings + User */}

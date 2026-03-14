@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { StatusBadge, Badge, BusinessImpactBadge } from '../components/common'
+import { useDemoMode } from '../contexts/DemoModeContext'
 import { agents, platformSources, DISPLAY_TOTAL_AGENTS } from '../data/agents'
 import { formatRelativeTime } from '../utils/formatters'
 import { MagnifyingGlassIcon, DocumentTextIcon } from '../components/navigation/Icons'
@@ -9,7 +10,8 @@ import { roles, roleCoversAgent } from '../data/roles'
 
 const statuses = ['all', 'active', 'degraded', 'maintenance', 'offline']
 const impacts = ['all', 'green', 'yellow', 'red']
-const impactLabels = { green: 'Stable', yellow: 'Shift Detected', red: 'Significant Shift' }
+const behaviorImpactLabels = { green: 'Stable', yellow: 'Shift Detected', red: 'Significant Shift' }
+const kpiImpactLabels = { green: 'On Target', yellow: 'Approaching', red: 'Missing Target' }
 
 function RoleMultiSelect({ selected, onChange }) {
   const [open, setOpen] = useState(false)
@@ -85,6 +87,8 @@ function RoleMultiSelect({ selected, onChange }) {
 }
 
 export default function AgentInventory() {
+  const { demoMode } = useDemoMode()
+  const impactLabels = demoMode === 'kpi' ? kpiImpactLabels : behaviorImpactLabels
   const [searchParams] = useSearchParams()
 
   const [search, setSearch] = useState('')
@@ -216,7 +220,7 @@ export default function AgentInventory() {
                 </Link>
                 <div className="flex items-center gap-2">
                   <Link to={`/agents/${agent.id}/behavior`} className="btn-secondary text-xs px-2.5 py-1.5">
-                    Behavior
+                    {demoMode === 'kpi' ? 'KPIs' : 'Behavior'}
                   </Link>
                   <Link to={`/agents/${agent.id}/logs`} className="btn-secondary text-xs px-2.5 py-1.5">
                     <DocumentTextIcon className="w-3.5 h-3.5" />

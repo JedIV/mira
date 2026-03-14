@@ -1,12 +1,21 @@
 import { useState, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Card, CardHeader, Badge } from '../components/common'
-import { DonutChart } from '../components/charts'
+import { DonutChart, LineChart } from '../components/charts'
 import TraceFlowDiagram from '../components/charts/TraceFlowDiagram'
+import { useDemoMode } from '../contexts/DemoModeContext'
 import { getAgentById } from '../data/agents'
 import { getConversationsByAgent, getTopicDistributions, getDriftAlert, getTopicColor } from '../data/conversations'
 import { computeFlowStats, sampleTraces, traceToConversation } from '../data/kycTraceGenerator'
 import { tracesByWindow, februaryTraces } from '../data/kycTraces'
+import {
+  getAllAgentKpis,
+  generateBusinessTimelineData,
+  getAgentKpiConfig,
+  getAgentKpiTarget,
+  isLowerBetter,
+  kycKpiEvents,
+} from '../data/metrics'
 import { formatDateTime } from '../utils/formatters'
 
 function summarizeConv(conv) {
@@ -25,17 +34,12 @@ function ConversationCard({ conv, highlightTopic }) {
       className={`border-l-2 ${isEscalated ? 'border-l-red-400' : 'border-l-emerald-400'} cursor-pointer group`}
       onClick={() => setExpanded(!expanded)}
     >
-      {/* Summary row */}
       <div className="flex items-center gap-3 px-3 py-2 hover:bg-slate-100/60 transition-colors">
-        <span className={`text-[10px] font-bold uppercase tracking-wide w-16 flex-shrink-0 ${
-          isEscalated ? 'text-red-500' : 'text-emerald-500'
-        }`}>{outcomeLabel}</span>
+        <span className={`text-[10px] font-bold uppercase tracking-wide w-16 flex-shrink-0 ${isEscalated ? 'text-red-500' : 'text-emerald-500'}`}>{outcomeLabel}</span>
         <span className="text-sm text-slate-600 truncate flex-1">{summary}</span>
         <span className="text-[11px] text-slate-500 flex-shrink-0">{formatDateTime(conv.timestamp)}</span>
         <span className={`text-[10px] text-slate-400 transition-transform ${expanded ? 'rotate-90' : ''}`}>▶</span>
       </div>
-
-      {/* Expanded: conversation + trace */}
       {expanded && (
         <div className="px-3 pb-3 ml-[4.5rem] border-t border-slate-400/90">
           <div className="space-y-1.5 pt-2 text-sm">
@@ -59,14 +63,9 @@ function ConversationCard({ conv, highlightTopic }) {
                   outcome: 'bg-slate-200 text-slate-600',
                 }
                 return (
-                  <div
-                    key={step.step}
-                    className="flex items-start gap-2 px-2.5 py-1.5 rounded text-xs bg-slate-50"
-                  >
+                  <div key={step.step} className="flex items-start gap-2 px-2.5 py-1.5 rounded text-xs bg-slate-50">
                     {i > 0 && <span className="text-slate-300 -ml-1 mr-0.5">→</span>}
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide flex-shrink-0 ${roleColors[step.role] || 'bg-slate-200 text-slate-600'}`}>
-                      {step.node}
-                    </span>
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide flex-shrink-0 ${roleColors[step.role] || 'bg-slate-200 text-slate-600'}`}>{step.node}</span>
                     <span className="text-slate-600">{step.action}</span>
                   </div>
                 )
@@ -85,6 +84,14 @@ function monthLabel(monthsAgo) {
   return d.toLocaleString('default', { month: 'short', year: 'numeric' })
 }
 
+const reviewTeams = [
+  'KYC Operations',
+  'Model Risk Management',
+  'Compliance & Regulatory',
+  'AI/ML Engineering',
+  'Identity Verification',
+]
+
 function KycBehaviorView({ agent, conversations, driftAlert }) {
   const [window, setWindow] = useState(3)
   const [reviewOpen, setReviewOpen] = useState(false)
@@ -92,15 +99,10 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
 
   const currentStats = useMemo(() => computeFlowStats(februaryTraces), [])
   const baselineStats = useMemo(() => computeFlowStats(tracesByWindow[window]), [window])
-
-  const allConvs = useMemo(
-    () => sampleTraces(februaryTraces, 10).map((t, i) => traceToConversation(t, i)),
-    [],
-  )
+  const allConvs = useMemo(() => sampleTraces(februaryTraces, 10).map((t, i) => traceToConversation(t, i)), [])
 
   return (
     <>
-      {/* Outcome Shift Alert */}
       {driftAlert && (
         <div className="bg-red-50 border border-red-300 rounded-lg p-4">
           <div className="flex items-start gap-3">
@@ -115,26 +117,12 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
                 </div>
                 {!reviewSent && (
                   <div className="relative flex-shrink-0">
-                    <button
-                      onClick={() => setReviewOpen(!reviewOpen)}
-                      className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors cursor-pointer whitespace-nowrap"
-                    >
-                      Request Review
-                    </button>
+                    <button onClick={() => setReviewOpen(!reviewOpen)} className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors cursor-pointer whitespace-nowrap">Request Review</button>
                     {reviewOpen && (
                       <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-elevated border border-slate-400/90 py-1 z-50">
                         <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400">Send review to</p>
                         {reviewTeams.map((team) => (
-                          <button
-                            key={team}
-                            className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                            onClick={() => {
-                              setReviewSent(team)
-                              setReviewOpen(false)
-                            }}
-                          >
-                            {team}
-                          </button>
+                          <button key={team} className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer" onClick={() => { setReviewSent(team); setReviewOpen(false) }}>{team}</button>
                         ))}
                       </div>
                     )}
@@ -152,17 +140,12 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
         </div>
       )}
 
-      {/* Decision Flow Analysis */}
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Decision Flow Analysis</h3>
           <div className="flex items-center gap-2 text-sm">
             <span className="text-slate-400">Comparing</span>
-            <select
-              className="bg-slate-100 border border-slate-400/90 rounded-md px-3 py-1.5 text-slate-700 font-medium text-sm cursor-pointer"
-              value={window}
-              onChange={(e) => setWindow(Number(e.target.value))}
-            >
+            <select className="bg-slate-100 border border-slate-400/90 rounded-md px-3 py-1.5 text-slate-700 font-medium text-sm cursor-pointer" value={window} onChange={(e) => setWindow(Number(e.target.value))}>
               <option value={3}>3 months ago ({monthLabel(3)})</option>
               <option value={2}>2 months ago ({monthLabel(2)})</option>
               <option value={1}>Last month</option>
@@ -173,7 +156,6 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
         <TraceFlowDiagram baselineStats={baselineStats} currentStats={currentStats} />
       </Card>
 
-      {/* Recent Sessions */}
       <Card>
         <CardHeader title="Recent Sessions" subtitle="Sampled session traces" />
         <div className="divide-y divide-slate-400/90">
@@ -186,16 +168,136 @@ function KycBehaviorView({ agent, conversations, driftAlert }) {
   )
 }
 
-const reviewTeams = [
-  'KYC Operations',
-  'Model Risk Management',
-  'Compliance & Regulatory',
-  'AI/ML Engineering',
-  'Identity Verification',
-]
+// ── KPI Mode Views ──
+
+function KpiMetricCard({ kpi }) {
+  const delta = kpi.previous != null ? kpi.value - kpi.previous : null
+  const isBad = kpi.lowerBetter ? (delta != null && delta > 0) : (delta != null && delta < 0)
+  const isAtTarget = kpi.target != null
+    ? (kpi.lowerBetter ? kpi.value <= kpi.target : kpi.value >= kpi.target)
+    : true
+
+  const statusColor = isAtTarget
+    ? 'border-emerald-200 bg-emerald-50'
+    : 'border-red-200 bg-red-50'
+
+  return (
+    <div className={`rounded-lg border p-4 ${statusColor}`}>
+      <p className="text-xs uppercase tracking-wider text-slate-500 font-medium">{kpi.label}</p>
+      <div className="flex items-end gap-2 mt-1">
+        <p className="text-2xl font-bold text-slate-900">
+          {typeof kpi.value === 'number' && kpi.value > 100 ? kpi.value.toLocaleString() : kpi.value}{kpi.unit}
+        </p>
+        {delta != null && (
+          <span className={`text-xs font-medium mb-1 ${isBad ? 'text-red-600' : 'text-emerald-600'}`}>
+            {delta > 0 ? '↑' : '↓'} {Math.abs(Math.round(delta * 10) / 10)}{kpi.unit} vs prior
+          </span>
+        )}
+      </div>
+      {kpi.target != null && (
+        <p className="text-xs text-slate-500 mt-1">
+          Target: {kpi.lowerBetter ? '<' : '>'}{kpi.target}{kpi.unit}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function KycKpiView({ agent }) {
+  const kpis = getAllAgentKpis(agent.id)
+  const config = getAgentKpiConfig(agent.id)
+  const target = getAgentKpiTarget(agent.id)
+  const timelineData = useMemo(() => generateBusinessTimelineData(agent.id), [agent.id])
+
+  return (
+    <>
+      {/* KPI Header Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpis.map((kpi) => (
+          <KpiMetricCard key={kpi.label} kpi={kpi} />
+        ))}
+      </div>
+
+      {/* KPI Timeline Chart */}
+      <Card>
+        <CardHeader
+          title={`${config.kpiLabel} Trend`}
+          subtitle="Weekly over 6 months with target reference"
+        />
+        <LineChart
+          data={timelineData}
+          dataKey={config.kpiLabel}
+          xAxisKey="week"
+          color={isLowerBetter(agent.id) ? '#EF4444' : '#2AB1AC'}
+          height={300}
+          strokeWidth={3}
+          referenceLine={{ value: target, label: `Target: ${target}%`, color: '#6366F1' }}
+        />
+      </Card>
+
+      {/* KPI Events Timeline */}
+      <Card>
+        <CardHeader title="KPI Events" subtitle="Threshold breaches and metric changes" />
+        <div className="space-y-0">
+          {kycKpiEvents.map((evt, i) => (
+            <div key={i} className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
+              <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${evt.type === 'breach' ? 'bg-red-500' : 'bg-blue-500'}`} />
+              <div className="flex-1">
+                <p className="text-sm text-slate-900">{evt.event}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{evt.date}</p>
+              </div>
+              <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${evt.type === 'breach' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+                {evt.type === 'breach' ? 'Threshold Breach' : 'Deployment'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </>
+  )
+}
+
+function GenericKpiView({ agent }) {
+  const kpis = getAllAgentKpis(agent.id)
+  const config = getAgentKpiConfig(agent.id)
+  const target = getAgentKpiTarget(agent.id)
+  const timelineData = useMemo(() => generateBusinessTimelineData(agent.id), [agent.id])
+
+  return (
+    <>
+      {/* KPI Header Cards */}
+      <div className={`grid gap-4 ${kpis.length > 2 ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-2'}`}>
+        {kpis.map((kpi) => (
+          <KpiMetricCard key={kpi.label} kpi={kpi} />
+        ))}
+      </div>
+
+      {/* KPI Timeline Chart */}
+      <Card>
+        <CardHeader
+          title={`${config.kpiLabel} Trend`}
+          subtitle="Weekly over 6 months with target reference"
+        />
+        <LineChart
+          data={timelineData}
+          dataKey={config.kpiLabel}
+          xAxisKey="week"
+          color={isLowerBetter(agent.id) ? '#EF4444' : '#2AB1AC'}
+          height={300}
+          strokeWidth={2}
+          referenceLine={{ value: target, label: `Target: ${target}%`, color: '#6366F1' }}
+        />
+      </Card>
+    </>
+  )
+}
+
+// ── Main Component ──
 
 export default function AgentBehavior() {
   const { agentId } = useParams()
+  const { demoMode } = useDemoMode()
+  const isKpi = demoMode === 'kpi'
   const agent = getAgentById(agentId || 'cs-agent-001')
   const conversations = getConversationsByAgent(agentId)
   const agentTopicDistributions = getTopicDistributions(agentId) || {}
@@ -210,16 +312,36 @@ export default function AgentBehavior() {
   const q3Data = Object.entries(q3Topics).map(([name, value]) => ({
     name: formatTopic(name), value, color: getTopicColor(name),
   }))
-
   const q4Data = Object.entries(q4Topics).map(([name, value]) => ({
     name: formatTopic(name), value, color: getTopicColor(name),
   }))
 
   const isKyc = agentId === 'kyc-agent-016'
 
+  // KPI mode
+  if (isKpi) {
+    return (
+      <div className="space-y-6">
+        <div className="page-header">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold mb-1">{agent?.name}</h1>
+              <p className="text-sm text-slate-300">KPI performance, targets, and trend analysis</p>
+            </div>
+            <Link to="/usage-trends" className="btn-secondary !bg-white/10 !text-white !border-white/20 hover:!bg-white/20">
+              View All KPI Trends
+            </Link>
+          </div>
+        </div>
+
+        {isKyc ? <KycKpiView agent={agent} /> : <GenericKpiView agent={agent} />}
+      </div>
+    )
+  }
+
+  // Behavior mode (existing)
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="page-header">
         <div className="flex items-center justify-between">
           <div>
@@ -235,14 +357,9 @@ export default function AgentBehavior() {
       </div>
 
       {isKyc ? (
-        <KycBehaviorView
-          agent={agent}
-          conversations={conversations}
-          driftAlert={driftAlert}
-        />
+        <KycBehaviorView agent={agent} conversations={conversations} driftAlert={driftAlert} />
       ) : (
         <>
-          {/* Drift Alert — only shown when drift is detected */}
           {driftAlert && (
             <div className="bg-danger-light border border-danger rounded-lg p-4">
               <div className="flex items-start gap-3">
@@ -258,7 +375,6 @@ export default function AgentBehavior() {
             </div>
           )}
 
-          {/* Split View: Conversations + Topics */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="max-h-[600px] overflow-hidden flex flex-col">
               <CardHeader title="Sampled Conversations" subtitle="Recent interaction examples" />
@@ -271,16 +387,11 @@ export default function AgentBehavior() {
 
             <div className="space-y-6">
               <Card>
-                <CardHeader
-                  title="Topic Distribution - Q4 2025"
-                  subtitle={driftAlert ? 'Current quarter showing drift' : 'Current quarter'}
-                />
+                <CardHeader title="Topic Distribution - Q4 2025" subtitle={driftAlert ? 'Current quarter showing drift' : 'Current quarter'} />
                 <DonutChart data={q4Data} height={250} />
                 {driftAlert && (
                   <div className="mt-4 p-3 bg-danger-light rounded-lg">
-                    <p className="text-sm text-danger-dark">
-                      <strong>New Topic Alert:</strong> {driftAlert.cardAlert}
-                    </p>
+                    <p className="text-sm text-danger-dark"><strong>New Topic Alert:</strong> {driftAlert.cardAlert}</p>
                   </div>
                 )}
               </Card>
@@ -291,7 +402,6 @@ export default function AgentBehavior() {
             </div>
           </div>
 
-          {/* Topic Evolution Timeline */}
           <Card>
             <CardHeader title="Topic Evolution Over Time" subtitle="How conversation topics have shifted across quarters" />
             <div className="overflow-x-auto">
@@ -326,9 +436,7 @@ export default function AgentBehavior() {
                         <td className="py-3 text-center text-slate-500">{q2Value != null ? `${q2Value}%` : '-'}</td>
                         <td className="py-3 text-center text-slate-500">{q3Value ? `${q3Value}%` : '-'}</td>
                         <td className="py-3 text-center font-medium">{q4Value}%</td>
-                        <td className={`py-3 text-right font-medium ${
-                          isNew ? 'text-danger' : change > 0 ? 'text-success' : change < 0 ? 'text-danger' : 'text-slate-500'
-                        }`}>
+                        <td className={`py-3 text-right font-medium ${isNew ? 'text-danger' : change > 0 ? 'text-success' : change < 0 ? 'text-danger' : 'text-slate-500'}`}>
                           {isNew ? 'NEW' : change > 0 ? `+${change}%` : change < 0 ? `${change}%` : '-'}
                         </td>
                       </tr>
